@@ -1,6 +1,7 @@
 from webapp import app
 from flask import request, render_template
-from webapp.models import Accounts
+from webapp.models import Accounts, db
+import bcrypt
 
 
 @app.route('/', methods=['GET'])
@@ -18,7 +19,12 @@ def signup():
         if email_query:
             msg = "Email In Use"
         elif len(email.split('@')) == 2 and len(email.split('.')) == 2 and "@buffalo.edu" in email:
-            msg = "Valid UB Email"
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+            user = Accounts(email, hashed_password)
+            db.session.add(user)
+            db.session.commit()
+            msg = "Account created for {0}".format(email)
         else:
             msg = "Invalid UB Email"
     return render_template('signup.html', msg=msg)
+
