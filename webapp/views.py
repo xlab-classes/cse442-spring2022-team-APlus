@@ -22,6 +22,7 @@ def register():
             msg = "Login failed. Incorrect username or password."
     return render_template('login.html', msg=msg)
 
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     msg = ""
