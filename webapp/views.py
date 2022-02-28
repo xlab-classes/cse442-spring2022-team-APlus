@@ -47,7 +47,7 @@ def signup():
         else:
             msg = "Invalid UB Email"
     return render_template('signup.html', msg=msg)
- #change this to the directory where you want same the user profile image   
+ #change this to the directory where you want save the user profile image   
 app.config['UPLOAD_FOLDER'] = ""
 @app.route('/upload', methods=['POST'])
 def profile():
