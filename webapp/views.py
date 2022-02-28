@@ -9,6 +9,20 @@ def home():
     return 'Hello World!'
 
 
+@app.route('/login', methods=['GET', 'POST'])
+def register():
+    msg = ""
+    if request.method == 'POST':
+        email = request.form['email'].strip().lower()
+        password = request.form['password']
+        stored_password_hash = Accounts.query.filter_by(email=email).first().password.encode("utf-8")
+        if bcrypt.checkpw(password.encode("utf-8"), stored_password_hash):
+            msg = "Login successful!"
+        else:
+            msg = "Login failed. Incorrect username or password."
+    return render_template('login.html', msg=msg)
+
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     msg = ""
@@ -16,6 +30,8 @@ def signup():
         email = request.form['email'].strip().lower()
         password = request.form['password']
         email_query = Accounts.query.filter_by(email=email).first()
+        print("password: {}".format(email_query.password))
+        print(Accounts.query.filter_by(email=email).first())
         if email_query:
             msg = "Email In Use"
         elif len(email.split('@')) == 2 and len(email.split('.')) == 2 and "@buffalo.edu" in email:
