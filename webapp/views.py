@@ -30,8 +30,6 @@ def signup():
         email = request.form['email'].strip().lower()
         password = request.form['password']
         email_query = Accounts.query.filter_by(email=email).first()
-        print("password: {}".format(email_query.password))
-        print(Accounts.query.filter_by(email=email).first())
         if email_query:
             msg = "Email In Use"
         elif len(email.split('@')) == 2 and len(email.split('.')) == 2 and "@buffalo.edu" in email:
