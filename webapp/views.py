@@ -15,6 +15,10 @@ def register():
     if request.method == 'POST':
         email = request.form['email'].strip().lower()
         password = request.form['password']
+        stored_email = Accounts.query.filter_by(email=email)
+        if not stored_email:
+            msg = "Login failed. Incorrect username or password."
+            return render_template('login.html', msg=msg)
         stored_password_hash = Accounts.query.filter_by(email=email).first().password.encode("utf-8")
         if bcrypt.checkpw(password.encode("utf-8"), stored_password_hash):
             msg = "Login successful!"
