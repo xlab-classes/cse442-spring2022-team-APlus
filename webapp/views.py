@@ -51,7 +51,7 @@ def signup():
     return render_template('signup.html', msg=msg)
 
  #change this to the directory where you want save the user profile image   
-app.config['UPLOAD_FOLDER'] = "/Users/jingjingchi/Downloads/cse442-spring2022-team-APlus/static/uploads"
+app.config['UPLOAD_FOLDER'] = ""
 @app.route('/upload', methods=['POST'])
 def profile():
     file = request.files['file']
@@ -70,10 +70,3 @@ def profile():
     
     
 
-@app.route('/display/<filename>')
-def display_image(filename):
-    print("fffff")
-    print('display_image filename: ' + filename)
-    print("ddd",url_for('static', filename='uploads/' + filename))
-    return redirect(url_for("static",filename='upload_image/' + filename), code=301)    
-#   return render_template('profile.html', filename=filename)
