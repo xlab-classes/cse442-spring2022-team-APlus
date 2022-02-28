@@ -5,7 +5,9 @@ from webapp.models import Accounts, db
 import bcrypt
 import os
 from werkzeug.utils import secure_filename
-
+from PIL import Image
+import base64
+import io
 @app.route('/', methods=['GET'])
 def home():
     return 'Hello World!'
@@ -47,25 +49,31 @@ def signup():
         else:
             msg = "Invalid UB Email"
     return render_template('signup.html', msg=msg)
- #change this to the directory where you want same the user profile image   
-app.config['UPLOAD_FOLDER'] = ""
+
+ #change this to the directory where you want save the user profile image   
+app.config['UPLOAD_FOLDER'] = "/Users/jingjingchi/Downloads/cse442-spring2022-team-APlus/static/uploads"
 @app.route('/upload', methods=['POST'])
 def profile():
-   
     file = request.files['file']
     if file:
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        #print('upload_image filename: ' + filename)
+        # print('upload_image filename: ' + filename)
         #flash('Image successfully uploaded and displayed below')
-        return render_template('profile.html', filename=filename)
+        im = Image.open(app.config['UPLOAD_FOLDER']+'/'+filename)
+        data = io.BytesIO()
+        filetype = filename.split('.')[1]
+        print(filetype)
+        im.save(data, filetype)
+        encoded_img_data = base64.b64encode(data.getvalue())
+        return render_template('profile.html',  img_data=encoded_img_data.decode('utf-8'))
     
     
 
 @app.route('/display/<filename>')
 def display_image(filename):
+    print("fffff")
     print('display_image filename: ' + filename)
     print("ddd",url_for('static', filename='uploads/' + filename))
-    return redirect(url_for(filename='upload_image/' + filename), code=301)    
-    
-    #return render_template('profile.html', filename=filename)
+    return redirect(url_for("static",filename='upload_image/' + filename), code=301)    
+#   return render_template('profile.html', filename=filename)
