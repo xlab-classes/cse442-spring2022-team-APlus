@@ -1,13 +1,14 @@
 from fileinput import filename
 from webapp import app
 from flask import request, render_template, redirect,url_for,flash
-from webapp.models import Accounts, db
+from webapp.models import db, Accounts, Listings, Files
 import bcrypt
 import os
 from werkzeug.utils import secure_filename
 from PIL import Image
 import base64
 import io
+from uuid import uuid4
 
 
 @app.route('/', methods=['GET'])
@@ -74,6 +75,19 @@ def profile():
         return render_template('profile.html',  img_data=encoded_img_data.decode('utf-8'))
 
 
-@app.route('/listing', methods=['GET'])
+@app.route('/listing', methods=['GET', 'POST'])
 def listings():
-    return render_template('listing.html', msg="")
+    if request.method == 'POST':
+        title = request.form['title']
+        description = request.form['description']
+        files = request.files.getlist("files")
+        listing = Listings(title=title, description=description)
+        db.session.add(listing)
+        for file in files:
+            random_filename = str(uuid4()) + ".PNG"
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
+            file = Files(file_path=random_filename)
+            db.session.add(file)
+        db.session.commit()
+
+    return render_template('listing.html', listings="Hello!")
