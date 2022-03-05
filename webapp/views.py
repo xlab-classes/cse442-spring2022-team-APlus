@@ -1,5 +1,4 @@
-from fileinput import filename
-from webapp import app
+from webapp import app, login_manager
 from flask import request, render_template, redirect,url_for,flash
 from webapp.models import db, Accounts, Listings, Files
 import bcrypt
@@ -9,10 +8,18 @@ from PIL import Image
 import base64
 import io
 from uuid import uuid4
+from flask_login import login_user, login_required, current_user, logout_user
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Accounts.query.get(int(user_id))
 
 
 @app.route('/', methods=['GET'])
 def home():
+    if current_user.is_authenticated:
+        return 'Hello {0}!'.format(current_user.email)
     return 'Hello World!'
 
 
@@ -22,17 +29,25 @@ def register():
     if request.method == 'POST':
         email = request.form['email'].strip().lower()
         password = request.form['password']
-        stored_email = Accounts.query.filter_by(email=email)
+        stored_email = Accounts.query.filter_by(email=email).first()
         if not stored_email:
             msg = "Login failed. Incorrect username or password."
             return render_template('login.html', msg=msg)
         stored_password_hash = Accounts.query.filter_by(email=email).first().password.encode("utf-8")
         if bcrypt.checkpw(password.encode("utf-8"), stored_password_hash):
             msg = "Login successful!"
+            login_user(stored_email)
             return render_template('profile.html', msg=msg)
         else:
             msg = "Login failed. Incorrect username or password."
     return render_template('login.html', msg=msg)
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect('/login')
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -49,7 +64,7 @@ def signup():
             msg = "Email In Use"
         elif len(email.split('@')) == 2 and len(email.split('.')) == 2 and "@buffalo.edu" in email:
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-            user = Accounts(email=email, password=hashed_password)
+            user = Accounts(email, hashed_password)
             db.session.add(user)
             db.session.commit()
             msg = "Account created for {0}".format(email)
@@ -76,6 +91,7 @@ def profile():
 
 
 @app.route('/listing', methods=['GET', 'POST'])
+@login_required
 def listings():
     if request.method == 'POST':
         title = request.form['title']
@@ -83,10 +99,11 @@ def listings():
         files = request.files.getlist("files")
         listing = Listings(title=title, description=description)
         db.session.add(listing)
+        db.session.commit()
         for file in files:
-            random_filename = str(uuid4()) + ".PNG"
+            random_filename = str(uuid4()) + ".jpg"
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
-            file = Files(file_path=random_filename)
+            file = Files(post_id=listing.id, file_path=random_filename)
             db.session.add(file)
         db.session.commit()
 
