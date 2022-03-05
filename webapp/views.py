@@ -8,6 +8,8 @@ from werkzeug.utils import secure_filename
 from PIL import Image
 import base64
 import io
+
+
 @app.route('/', methods=['GET'])
 def home():
     return 'Hello World!'
@@ -46,15 +48,16 @@ def signup():
             msg = "Email In Use"
         elif len(email.split('@')) == 2 and len(email.split('.')) == 2 and "@buffalo.edu" in email:
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-            user = Accounts(email, hashed_password)
+            user = Accounts(email=email, password=hashed_password)
             db.session.add(user)
             db.session.commit()
             msg = "Account created for {0}".format(email)
         else:
             msg = "Invalid UB Email"
     return render_template('signup.html', msg=msg)
- #change this to the directory where you want save the user profile image   
-app.config['UPLOAD_FOLDER'] = ""
+ #change this to the directory where you want save the user profile image
+
+
 @app.route('/upload', methods=['POST'])
 def profile():
     file = request.files['file']
