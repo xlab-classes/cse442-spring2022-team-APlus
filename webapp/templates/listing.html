@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Lisitings</title>
+</head>
+
+<body>
+    <h2>Create Listings</h2>
+    <form action="/listing" method="post" enctype="multipart/form-data">
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title" required><br>
+        <label for="description">Description:</label><br>
+        <input type="text" id="description" name="description" required><br>
+        <input type="file" name="file[]" multiple=""><br>
+        <input type="submit" value="Post">
+    </form>
+
+    <h2>Listings</h2>
+    {{ listings }}
+
+</body>
+</html>

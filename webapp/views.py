@@ -55,7 +55,6 @@ def signup():
         else:
             msg = "Invalid UB Email"
     return render_template('signup.html', msg=msg)
- #change this to the directory where you want save the user profile image
 
 
 @app.route('/upload', methods=['POST'])
@@ -73,6 +72,8 @@ def profile():
         im.save(data, filetype)
         encoded_img_data = base64.b64encode(data.getvalue())
         return render_template('profile.html',  img_data=encoded_img_data.decode('utf-8'))
-    
-    
 
+
+@app.route('/listing', methods=['GET'])
+def listings():
+    return render_template('listing.html', msg="")
