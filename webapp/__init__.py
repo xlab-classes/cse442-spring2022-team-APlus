@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 app = Flask(__name__)
 
-sql_database = 'mysql+pymysql://{0}:{1}@oceanus.cse.buffalo.edu/{0}_db'.format(os.getenv('DB_USER'), os.getenv('DB_PASSWORD'))
+sql_database = 'mysql+pymysql://{0}:{1}@oceanus.cse.buffalo.edu/{0}_db'.format('jchi3','50266661')
 app.config['SECRET-KEY'] = 'mySecretKey'
 app.config['SQLALCHEMY_DATABASE_URI'] = sql_database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
