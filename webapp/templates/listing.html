@@ -11,12 +11,12 @@
         <input type="text" id="title" name="title" required><br>
         <label for="description">Description:</label><br>
         <input type="text" id="description" name="description" required><br>
-        <input type="file" name="files" multiple=""><br>
+        <input type="file" name="files" multiple="" accept="image/png, image/jpg, image/jpeg" required><br>
         <input type="submit" value="Post">
     </form>
 
     <h2>Listings</h2>
-    {{ listings }}
+    {{ listings | safe }}
 
 </body>
 </html>

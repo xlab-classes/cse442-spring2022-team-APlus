@@ -1,4 +1,4 @@
-from webapp import app, login_manager
+from webapp import app, login_manager, ALLOWED_EXTENSIONS
 from flask import request, render_template, redirect,url_for,flash
 from webapp.models import db, Accounts, Listings, Files
 import bcrypt
@@ -14,6 +14,11 @@ from flask_login import login_user, login_required, current_user, logout_user
 @login_manager.user_loader
 def load_user(user_id):
     return Accounts.query.get(int(user_id))
+
+
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+    return redirect('/login')
 
 
 @app.route('/', methods=['GET'])
@@ -97,14 +102,34 @@ def listings():
         title = request.form['title']
         description = request.form['description']
         files = request.files.getlist("files")
-        listing = Listings(title=title, description=description)
+        listing = Listings(user_id=current_user.id, title=title, description=description)
         db.session.add(listing)
         db.session.commit()
         for file in files:
-            random_filename = str(uuid4()) + ".jpg"
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
-            file = Files(post_id=listing.id, file_path=random_filename)
-            db.session.add(file)
+            if file and allowed_file(file.filename):
+                file_extension = '.' + file.filename.split('.')[-1]
+                random_filename = str(uuid4()) + file_extension
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
+                file = Files(post_id=listing.id, file_path=random_filename)
+                db.session.add(file)
         db.session.commit()
+        return redirect(url_for('listings'))
 
-    return render_template('listing.html', listings="Hello!")
+    return render_template('listing.html', listings=display_listings())
+
+
+def display_listings():
+    output = ""
+    active_listings = reversed(Listings.query.all())
+    for listing in active_listings:
+        listing_owner = Accounts.query.filter_by(id=listing.user_id).first()
+        output += "<p>{0} - {1}</p><p>{2}</p>".format(listing.title, listing_owner.email, listing.description)
+        listing_photos = Files.query.filter_by(post_id=listing.id)
+        for photos in listing_photos:
+            output += "<img src={0}>".format(app.config['UPLOAD_FOLDER'].split('webapp')[1] + photos.file_path)
+    return output
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
