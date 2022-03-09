@@ -2,17 +2,77 @@
 <html>
 <body>
 
-<h1>Housing App Login</h1>
+<style>
+div {
+  background-color: lightgrey;
+  width: 300px;
+  border: 15px solid green;
+  padding: 50px;
+  margin: 20px;
+}
+
+.nav {
+  background-color: yellow; 
+  list-style-type: none;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+label {
+  text-align: center;
+}
+input {
+  text-align: center;
+}
+body{
+	background-color: lightgrey;
+}
+.btn {
+BORDER: 1px solid;  COLOR: black; height: 30px; width: 30px;
+WIDTH: 33%;
+display: inline-block;
+}
+.button {
+  border: 2px solid;
+  color: black;
+  <!padding: 15px 32px;>
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  <!margin: 4px 2px;>
+  cursor: pointer;
+  width: 33%;
+}
+h1{
+	text-align: center;
+}
+form{
+	text-align: center;
+}
+p{
+	text-align:center;
+}
+</style>
+<button class=button >btn</button>
+<button class=button>btn </button>
+<button class=button>btn </button>
+
+<h1>Login</h1>
+
+
 
 <form action="/CSE442-542/2022-Spring/cse-442p/login_info.php">
   <label for="user">Username:</label>
   <input type="text" id="user" name="user"><br><br>
   <label for="pass">Password:</label>
   <input type="text" id="pass" name="pass"><br><br>
-
+  <input type="submit" value="Log in">
 </form>
 
-<p>Enter your username and password in the corresponding boxes then hit enter</p>
+
+
+<p>If you dont have an account <a href="#createAccount">click here</a></p>
 
 </body>
 </html>
