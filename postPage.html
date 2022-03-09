@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Lisitings</title>
+</head>
+
+<body>
+    <style>
+        div {
+          background-color: lightgrey;
+          width: 300px;
+          border: 15px solid green;
+          padding: 50px;
+          margin: 20px;
+        }
+
+        .nav {
+          background-color: yellow;
+          list-style-type: none;
+          text-align: center;
+          margin: 0;
+          padding: 0;
+        }
+        label {
+          text-align: center;
+        }
+        input {
+          text-align: center;
+        }
+        body{
+            background-color: lightgrey;
+        }
+        .btn {
+        BORDER: 1px solid;  COLOR: black; height: 30px; width: 30px;
+        WIDTH: 33%;
+        display: inline-block;
+        }
+        h1{
+            text-align: center;
+        }
+        form{
+            text-align: center;
+        }
+        p{
+            text-align:center;
+        }
+        input{
+            text-align:center;
+        }
+    </style>
+    <h1>Create Listings</h1>
+    <form action="/listing" method="post" enctype="multipart/form-data">
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title" required><br>
+        <label for="description">Description:</label><br>
+        <input type="text" id="description" name="description" required><br>
+        <input type="file" name="files" multiple="" accept="image/png, image/jpg, image/jpeg" required><br>
+        <input type="submit" value="Post">
+    </form>
+
+    <h1>Listings</h1>
+    {{ listings | safe }}
+
+</body>
+</html>
