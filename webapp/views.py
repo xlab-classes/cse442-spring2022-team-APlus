@@ -9,10 +9,11 @@ import base64
 import io
 from uuid import uuid4
 from flask_login import login_user, login_required, current_user, logout_user
-from itsdangerous import URLSafeSerializer
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from flask_mail import Message
 
-serializer = URLSafeSerializer(app.config['SECRET_KEY'])
+serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -75,12 +76,23 @@ def signup():
             user = Accounts(email, hashed_password)
             token = serializer.dumps(user.email)
             message = Message("Verify Your Account", sender=("CSE442 A+", "cse442aplus@gmail.com"), recipients=[user.email])
-            message.body = "This is the email body with token {0}".format(token)
+            message.body = "Visit {0}verify/{1} this link to activate your account.".format(request.host_url, token)
             mail.send(message)
             msg = "Account created for {0}. Check your email and activate your account.".format(user.email)
         else:
             msg = "Invalid UB Email"
     return render_template('signup.html', msg=msg)
+
+
+@app.route('/verify/<token>')
+def verify_account(token):
+    if request.method == 'GET':
+        try:
+            return serializer.loads(token, max_age=60)
+        except SignatureExpired:
+            return "Verification link expired. Check your email for a new link"
+        except BadSignature:
+            return "Invalid verification link."
 
 
 @app.route('/upload', methods=['POST'])
