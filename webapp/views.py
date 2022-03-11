@@ -109,14 +109,13 @@ def listings():
         if len(valid_images) == 0:
             return redirect(url_for('listings'))
         listing = Listings(user_id=current_user.id, title=title, description=description)
-        db.session.add(listing)
-        db.session.commit()
-        for file in valid_images:
-            file_extension = '.' + file.filename.split('.')[-1]
-            random_filename = str(uuid4()) + file_extension
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
-            file = Files(post_id=listing.id, file_path=random_filename)
-            db.session.add(file)
+        for file in files:
+            if file and allowed_file(file.filename):
+                file_extension = '.' + file.filename.split('.')[-1]
+                random_filename = str(uuid4()) + file_extension
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
+                file = Files(post_id=listing.id, file_path=random_filename)
+                db.session.add(file)
         db.session.commit()
         return redirect(url_for('listings'))
 
@@ -132,7 +131,15 @@ def display_listings():
         listing_photos = Files.query.filter_by(post_id=listing.id)
         for photos in listing_photos:
             output += "<img src={0}>".format(app.config['UPLOAD_FOLDER'].split('webapp')[1] + photos.file_path)
+            output += "<a href=\" /listing/delete/"+ str(listing.id )+" \" class=\"btn btn-outline-danger btn-sm\">Delete Post</a>"
     return output
+
+
+@app.route('/listing/delete/<int:listing_id>')
+def delete_post(listing_id):
+    post_to_delete = Listings.query.get_or_404(listing_id)
+    post_to_delete.delete_listing()
+    return redirect(url_for('listings'))
 
 
 def allowed_file(filename):

@@ -21,6 +21,17 @@ class Listings(db.Model):
     description = db.Column(db.String(1000), nullable=False)
     files = db.relationship('Files', backref='listings')
 
+    def __init__(self, user_id, title, description):
+        self.user_id = user_id
+        self.title = title
+        self.description = description
+        db.session.add(self)
+        db.session.commit()
+
+    def delete_listing(self):
+        db.session.delete(self)
+        db.session.commit()
+
 
 class Files(db.Model):
     id = db.Column(db.Integer, primary_key=True)
