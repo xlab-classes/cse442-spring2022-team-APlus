@@ -3,6 +3,8 @@ from webapp.models import db
 import os
 from dotenv import load_dotenv
 from flask_login import LoginManager
+from flask_mail import Mail
+
 
 load_dotenv()
 app = Flask(__name__)
@@ -14,6 +16,14 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app.config['SQLALCHEMY_DATABASE_URI'] = sql_database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'cse442aplus@gmail.com'
+app.config['MAIL_PASSWORD'] = 'APlus442!'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+
+mail = Mail(app)
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
