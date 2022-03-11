@@ -1,4 +1,4 @@
-from webapp import app, login_manager, ALLOWED_EXTENSIONS
+from webapp import app, login_manager, ALLOWED_EXTENSIONS, mail
 from flask import request, render_template, redirect,url_for,flash
 from webapp.models import db, Accounts, Listings, Files
 import bcrypt
@@ -9,7 +9,10 @@ import base64
 import io
 from uuid import uuid4
 from flask_login import login_user, login_required, current_user, logout_user
+from itsdangerous import URLSafeSerializer
+from flask_mail import Message
 
+serializer = URLSafeSerializer(app.config['SECRET_KEY'])
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -37,12 +40,15 @@ def register():
         stored_email = Accounts.query.filter_by(email=email).first()
         if not stored_email:
             msg = "Login failed. Incorrect username or password."
-            return render_template('login.html', msg=msg)
+            # return render_template('login.html', msg=msg)
         stored_password_hash = Accounts.query.filter_by(email=email).first().password.encode("utf-8")
         if bcrypt.checkpw(password.encode("utf-8"), stored_password_hash):
-            msg = "Login successful!"
-            login_user(stored_email)
-            return render_template('profile.html', msg=msg)
+            if not stored_email.is_verified:
+                msg = "Unverifed account. Click on the activation link in your email to verify your account."
+                stored_email.verify_account()
+            else:
+                msg = "Login successful!"
+                login_user(stored_email)
         else:
             msg = "Login failed. Incorrect username or password."
     return render_template('login.html', msg=msg)
@@ -62,17 +68,16 @@ def signup():
         email = request.form['email'].strip().lower()
         password = request.form['password']
         email_query = Accounts.query.filter_by(email=email).first()
-        #print("password----", email)
-        #print("password: {}".format(email_query.password))
-       # print(Accounts.query.filter_by(email=email).first())
         if email_query:
             msg = "Email In Use"
         elif len(email.split('@')) == 2 and len(email.split('.')) == 2 and "@buffalo.edu" in email:
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             user = Accounts(email, hashed_password)
-            db.session.add(user)
-            db.session.commit()
-            msg = "Account created for {0}".format(email)
+            token = serializer.dumps(user.email)
+            message = Message("Verify Your Account", sender=("CSE442 A+", "cse442aplus@gmail.com"), recipients=[user.email])
+            message.body = "This is the email body with token {0}".format(token)
+            mail.send(message)
+            msg = "Account created for {0}. Check your email and activate your account.".format(user.email)
         else:
             msg = "Invalid UB Email"
     return render_template('signup.html', msg=msg)
