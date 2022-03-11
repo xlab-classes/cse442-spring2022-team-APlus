@@ -9,7 +9,7 @@ import base64
 import io
 from uuid import uuid4
 from flask_login import login_user, login_required, current_user, logout_user
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from flask_mail import Message
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
@@ -41,12 +41,16 @@ def register():
         stored_email = Accounts.query.filter_by(email=email).first()
         if not stored_email:
             msg = "Login failed. Incorrect username or password."
-            # return render_template('login.html', msg=msg)
         stored_password_hash = Accounts.query.filter_by(email=email).first().password.encode("utf-8")
         if bcrypt.checkpw(password.encode("utf-8"), stored_password_hash):
             if not stored_email.is_verified:
-                msg = "Unverifed account. Click on the activation link in your email to verify your account."
-                stored_email.verify_account()
+                token = serializer.dumps(stored_email.email)
+                message = Message("Verify Your Account", sender=("CSE442 - Team A+", "cse442aplus@gmail.com"),
+                                  recipients=[stored_email.email])
+                message.body = "Visit {0}verify/{1} this link to verify your account.".format(request.host_url, token)
+                mail.send(message)
+                msg = "Unverified account. Click on the verification link in your email. " \
+                      "If needed, a new link has been sent to your address."
             else:
                 msg = "Login successful!"
                 login_user(stored_email)
@@ -75,10 +79,10 @@ def signup():
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             user = Accounts(email, hashed_password)
             token = serializer.dumps(user.email)
-            message = Message("Verify Your Account", sender=("CSE442 A+", "cse442aplus@gmail.com"), recipients=[user.email])
-            message.body = "Visit {0}verify/{1} this link to activate your account.".format(request.host_url, token)
+            message = Message("Verify Your Account", sender=("CSE442 - Team A+", "cse442aplus@gmail.com"), recipients=[user.email])
+            message.body = "Visit {0}verify/{1} this link to verify your account.".format(request.host_url, token)
             mail.send(message)
-            msg = "Account created for {0}. Check your email and activate your account.".format(user.email)
+            msg = "Account created for {0}. Check your email and verify your account.".format(user.email)
         else:
             msg = "Invalid UB Email"
     return render_template('signup.html', msg=msg)
@@ -88,11 +92,17 @@ def signup():
 def verify_account(token):
     if request.method == 'GET':
         try:
-            return serializer.loads(token, max_age=60)
+            email = serializer.loads(token, max_age=3600)
+            user = Accounts.query.filter_by(email=email).first()
+            if user.is_verified:
+                return "Your account has already been verified.".format(email)
+            else:
+                user.verify_account()
+                return "Your account has been verified!".format(email)
         except SignatureExpired:
-            return "Verification link expired. Check your email for a new link"
-        except BadSignature:
-            return "Invalid verification link."
+            return "Your verification link has expired. Visit the login page to request a new link."
+        except:
+            return "Invalid verification link"
 
 
 @app.route('/upload', methods=['POST'])
