@@ -1,9 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 
 db = SQLAlchemy()
 
 
-class Accounts(db.Model):
+class Accounts(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
@@ -15,11 +16,15 @@ class Accounts(db.Model):
         # self.profile = profile 
 
 
-class Profile(db.Model):
+class Listings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(100), unique=True, nullable=False)
-    profile = db.Column(db.String(1000), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.String(1000), nullable=False)
+    files = db.relationship('Files', backref='listings')
 
-    def __init__(self, email, profile):
-        self.email = email
-        self.profile = profile 
+
+class Files(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('listings.id'))
+    file_path = db.Column(db.String(200), unique=True, nullable=False)
