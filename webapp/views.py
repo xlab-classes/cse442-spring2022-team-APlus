@@ -102,16 +102,21 @@ def listings():
         title = request.form['title']
         description = request.form['description']
         files = request.files.getlist("files")
+        valid_images = []
+        for file in files:
+            if file and allowed_file(file.filename):
+                valid_images.append(file)
+        if len(valid_images) == 0:
+            return redirect(url_for('listings'))
         listing = Listings(user_id=current_user.id, title=title, description=description)
         db.session.add(listing)
         db.session.commit()
-        for file in files:
-            if file and allowed_file(file.filename):
-                file_extension = '.' + file.filename.split('.')[-1]
-                random_filename = str(uuid4()) + file_extension
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
-                file = Files(post_id=listing.id, file_path=random_filename)
-                db.session.add(file)
+        for file in valid_images:
+            file_extension = '.' + file.filename.split('.')[-1]
+            random_filename = str(uuid4()) + file_extension
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
+            file = Files(post_id=listing.id, file_path=random_filename)
+            db.session.add(file)
         db.session.commit()
         return redirect(url_for('listings'))
 
