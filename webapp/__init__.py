@@ -18,8 +18,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = sql_database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'cse442aplus@gmail.com'
-app.config['MAIL_PASSWORD'] = 'APlus442!'
+app.config['MAIL_USERNAME'] = os.getenv('SMTP_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('SMTP_PASSWORD')
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 
