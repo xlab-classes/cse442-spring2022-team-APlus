@@ -156,6 +156,7 @@ def listings():
 
 
 @app.route('/delete_profile')
+@login_required
 def delete():
     files_obj = Files.query.filter_by(id=current_user.id).first()
     listings_obj = Listings.query.filter_by(id=current_user.id).first()
