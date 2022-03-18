@@ -1,5 +1,5 @@
 from webapp import app, login_manager, ALLOWED_EXTENSIONS, mail
-from flask import request, render_template, redirect,url_for,flash
+from flask import request, make_response, render_template, redirect, url_for, flash
 from webapp.models import db, Accounts, Listings, Files
 import bcrypt
 import os
@@ -39,8 +39,9 @@ def register():
         email = request.form['email'].strip().lower()
         password = request.form['password']
         stored_email = Accounts.query.filter_by(email=email).first()
-        if not stored_email:
+        if not stored_email or not Accounts.query.filter_by(email=email).first().password:
             msg = "Login failed. Incorrect username or password."
+            return render_template("login.html", msg=msg)
         stored_password_hash = Accounts.query.filter_by(email=email).first().password.encode("utf-8")
         if bcrypt.checkpw(password.encode("utf-8"), stored_password_hash):
             if not stored_email.is_verified:
@@ -79,7 +80,8 @@ def signup():
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             user = Accounts(email, hashed_password)
             token = serializer.dumps(user.email)
-            message = Message("Verify Your Account", sender=("CSE442 - Team A+", "cse442aplus@gmail.com"), recipients=[user.email])
+            message = Message("Verify Your Account", sender=("CSE442 - Team A+", "cse442aplus@gmail.com"),
+                              recipients=[user.email])
             message.body = "Visit {0}verify/{1} this link to verify your account.".format(request.host_url, token)
             mail.send(message)
             msg = "Account created for {0}. Check your email and verify your account.".format(user.email)
@@ -105,21 +107,24 @@ def verify_account(token):
             return "Invalid verification link"
 
 
-@app.route('/upload', methods=['POST'])
+@app.route('/upload', methods=['GET', 'POST'])
 def profile():
+    if request.method == "GET":
+        print()
+        return render_template("profile.html")
     file = request.files['file']
     if file:
         filename = secure_filename(file.filename)
         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
         # print('upload_image filename: ' + filename)
-        #flash('Image successfully uploaded and displayed below')
-        im = Image.open(app.config['UPLOAD_FOLDER']+'/'+filename)
+        # flash('Image successfully uploaded and displayed below')
+        im = Image.open(app.config['UPLOAD_FOLDER'] + '/' + filename)
         data = io.BytesIO()
         filetype = filename.split('.')[1]
         print(filetype)
         im.save(data, filetype)
         encoded_img_data = base64.b64encode(data.getvalue())
-        return render_template('profile.html',  img_data=encoded_img_data.decode('utf-8'))
+        return render_template('profile.html', img_data=encoded_img_data.decode('utf-8'))
 
 
 @app.route('/listing', methods=['GET', 'POST'])
@@ -148,6 +153,23 @@ def listings():
         return redirect(url_for('listings'))
 
     return render_template('listing.html', listings=display_listings())
+
+
+@app.route('/delete_profile')
+def delete():
+    files_obj = Files.query.filter_by(id=current_user.id).first()
+    listings_obj = Listings.query.filter_by(id=current_user.id).first()
+    account_obj = Accounts.query.filter_by(id=current_user.id).first()
+    if files_obj:
+        db.session.delete(files_obj)
+    if listings_obj:
+        db.session.delete(listings_obj)
+    if account_obj:
+        db.session.delete(account_obj)
+    db.session.commit()
+    flash("User Deleted Successfully.")
+    return render_template("/signup.html")
+
 
 
 def display_listings():
