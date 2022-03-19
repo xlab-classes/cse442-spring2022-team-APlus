@@ -89,42 +89,28 @@ def signup():
             msg = "Invalid UB Email"
     return render_template('signup.html', msg=msg)
 
-
-@app.route('/verify/<token>')
-def verify_account(token):
-    if request.method == 'GET':
-        try:
-            email = serializer.loads(token, max_age=3600)
-            user = Accounts.query.filter_by(email=email).first()
-            if user.is_verified:
-                return "Your account has already been verified.".format(email)
-            else:
-                user.verify_account()
-                return "Your account has been verified!".format(email)
-        except SignatureExpired:
-            return "Your verification link has expired. Visit the login page to request a new link."
-        except:
-            return "Invalid verification link"
-
-
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload', methods=['POST'])
 def profile():
-    if request.method == "GET":
-        print()
-        return render_template("profile.html")
+    id = current_user.id
+    file1 = Accounts.query.get_or_404(id)
     file = request.files['file']
+    print (file)
     if file:
         filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        # print('upload_image filename: ' + filename)
-        # flash('Image successfully uploaded and displayed below')
-        im = Image.open(app.config['UPLOAD_FOLDER'] + '/' + filename)
-        data = io.BytesIO()
-        filetype = filename.split('.')[1]
-        print(filetype)
-        im.save(data, filetype)
-        encoded_img_data = base64.b64encode(data.getvalue())
-        return render_template('profile.html', img_data=encoded_img_data.decode('utf-8'))
+        file_extension = filename.split('.')[1]
+        random_filename = str(uuid4()) +'.'+ file_extension
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename)) 
+        #file.profile = random_filename
+        img = profile(user_id=current_user.id,file_path=random_filename)
+        db.session.add(img)
+        db.session.commit()    
+        # data = io.BytesIO()
+        # filetype = filename.split('.')[1]
+        # im.save(data, filetype)
+        # encoded_img_data = base64.b64encode(data.getvalue())
+        #print(len(encoded_img_data.decode('utf-8'))) #<class 'str'>
+        return render_template('profile.html',  img_data=random_filename)
+
 
 
 @app.route('/listing', methods=['GET', 'POST'])
@@ -155,23 +141,6 @@ def listings():
     return render_template('listing.html', listings=display_listings())
 
 
-@app.route('/delete_profile')
-@login_required
-def delete():
-    files_obj = Files.query.filter_by(id=current_user.id).first()
-    listings_obj = Listings.query.filter_by(id=current_user.id).first()
-    account_obj = Accounts.query.filter_by(id=current_user.id).first()
-    if files_obj:
-        db.session.delete(files_obj)
-    if listings_obj:
-        db.session.delete(listings_obj)
-    if account_obj:
-        db.session.delete(account_obj)
-    db.session.commit()
-    flash("User Deleted Successfully.")
-    return render_template("/signup.html")
-
-
 
 def display_listings():
     output = ""
@@ -182,8 +151,18 @@ def display_listings():
         listing_photos = Files.query.filter_by(post_id=listing.id)
         for photos in listing_photos:
             output += "<img src={0}>".format(app.config['UPLOAD_FOLDER'].split('webapp')[1] + photos.file_path)
+            output += "<a href=\" /listing/delete/"+ str(listing.id )+" \" class=\"btn btn-outline-danger btn-sm\">Delete Post</a>"
     return output
 
+@app.route('/listing/delete/<int:id>')
+def delete_post(id):
+    post_to_delete = Listings.query.get_or_404(id)
+    try:
+        db.session.delete(post_to_delete)
+        db.session.commit()
+        return render_template('listing.html', listings=display_listings())
+    except:
+        return render_template('listing.html', listings=display_listings())
 
 def allowed_file(filename):
     return '.' in filename and \
