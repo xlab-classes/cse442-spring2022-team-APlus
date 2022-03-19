@@ -69,16 +69,8 @@ def signup():
             msg = "Email In Use"
         elif len(email.split('@')) == 2 and len(email.split('.')) == 2 and "@buffalo.edu" in email:
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-            im = Image.open('/Users/jingjingchi/Downloads/cse442-spring2022-team-APlus/default_profile.jpeg')
-            data = io.BytesIO()
-            filetype = 'jpeg'
-            im.save(data, filetype)
-            encoded_img_data = base64.b64encode(data.getvalue()).decode('utf-8')
-            print("fffff",len(encoded_img_data))
-            #pro= Profile(email,encoded_img_data)
             user = Accounts(email, hashed_password)
             db.session.add(user)
-           #db.session.add(pro)
             db.session.commit()
             msg = "Account created for {0}".format(email)
         else:
@@ -87,17 +79,26 @@ def signup():
 
 @app.route('/upload', methods=['POST'])
 def profile():
+    id = current_user.id
+    file1 = Accounts.query.get_or_404(id)
     file = request.files['file']
+    print (file)
     if file:
         filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        im = Image.open(app.config['UPLOAD_FOLDER']+'/'+filename)
-        data = io.BytesIO()
-        filetype = filename.split('.')[1]
-        im.save(data, filetype)
-        encoded_img_data = base64.b64encode(data.getvalue())
-        print(len(encoded_img_data.decode('utf-8'))) #<class 'str'>
-        return render_template('profile.html',  img_data=encoded_img_data.decode('utf-8'))
+        file_extension = filename.split('.')[1]
+        random_filename = str(uuid4()) +'.'+ file_extension
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename)) 
+        #file.profile = random_filename
+        img = profile(user_id=current_user.id,file_path=random_filename)
+        db.session.add(img)
+        db.session.commit()    
+        # data = io.BytesIO()
+        # filetype = filename.split('.')[1]
+        # im.save(data, filetype)
+        # encoded_img_data = base64.b64encode(data.getvalue())
+        #print(len(encoded_img_data.decode('utf-8'))) #<class 'str'>
+        return render_template('profile.html',  img_data=random_filename)
+
 
 
 @app.route('/listing', methods=['GET', 'POST'])
