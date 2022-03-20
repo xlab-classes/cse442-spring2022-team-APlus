@@ -1,0 +1,6 @@
+.DS_Store
+.env
+.vscode/
+.idea/
+**/__pycache__/
+webapp/static/uploads/*
