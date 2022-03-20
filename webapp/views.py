@@ -107,27 +107,30 @@ def verify_account(token):
             return "Invalid verification link"
 
 
-@app.route('/upload', methods=['POST'])
+@app.route('/upload', methods=['GET', 'POST'])
 def profile():
-    id = current_user.id
-    file1 = Accounts.query.get_or_404(id)
-    file = request.files['file']
-    print (file)
-    if file:
-        filename = secure_filename(file.filename)
-        file_extension = filename.split('.')[1]
-        random_filename = str(uuid4()) +'.'+ file_extension
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename)) 
-        #file.profile = random_filename
-        img = profile(user_id=current_user.id,file_path=random_filename)
-        db.session.add(img)
-        db.session.commit()    
-        # data = io.BytesIO()
-        # filetype = filename.split('.')[1]
-        # im.save(data, filetype)
-        # encoded_img_data = base64.b64encode(data.getvalue())
-        #print(len(encoded_img_data.decode('utf-8'))) #<class 'str'>
-        return render_template('profile.html',  img_data=random_filename)
+    if request.method == 'POST':
+        id = current_user.id
+        file1 = Accounts.query.get_or_404(id)
+        file = request.files['file']
+        print (file)
+        if file:
+            filename = secure_filename(file.filename)
+            file_extension = filename.split('.')[1]
+            random_filename = str(uuid4()) +'.'+ file_extension
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
+            #file.profile = random_filename
+            img = profile(user_id=current_user.id,file_path=random_filename)
+            db.session.add(img)
+            db.session.commit()
+            # data = io.BytesIO()
+            # filetype = filename.split('.')[1]
+            # im.save(data, filetype)
+            # encoded_img_data = base64.b64encode(data.getvalue())
+            #print(len(encoded_img_data.decode('utf-8'))) #<class 'str'>
+            return render_template('profile.html',  img_data=random_filename)
+    else:
+        return render_template('profile.html')
 
 
 @app.route('/listing', methods=['GET', 'POST'])
