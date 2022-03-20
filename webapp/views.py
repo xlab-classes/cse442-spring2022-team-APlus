@@ -106,6 +106,7 @@ def verify_account(token):
         except:
             return "Invalid verification link"
 
+
 @app.route('/upload', methods=['POST'])
 def profile():
     id = current_user.id
@@ -180,10 +181,10 @@ def display_listings():
     for listing in active_listings:
         listing_owner = Accounts.query.filter_by(id=listing.user_id).first()
         output += "<p>{0} - {1}</p><p>{2}</p>".format(listing.title, listing_owner.email, listing.description)
+        output += "<a href=\" /listing/delete/"+ str(listing.id )+" \" class=\"btn btn-outline-danger btn-sm\">Delete Post</a>"
         listing_photos = Files.query.filter_by(post_id=listing.id)
         for photos in listing_photos:
             output += "<img src={0}>".format(app.config['UPLOAD_FOLDER'].split('webapp')[1] + photos.file_path)
-            output += "<a href=\" /listing/delete/"+ str(listing.id )+" \" class=\"btn btn-outline-danger btn-sm\">Delete Post</a>"
     return output
 
   
@@ -193,9 +194,9 @@ def delete_post(id):
     try:
         db.session.delete(post_to_delete)
         db.session.commit()
-        return render_template('listing.html', listings=display_listings())
+        return redirect(url_for('listings'))
     except:
-        return render_template('listing.html', listings=display_listings())
+        return redirect(url_for('listings'))
 
       
 def allowed_file(filename):
