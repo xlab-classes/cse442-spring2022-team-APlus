@@ -128,7 +128,6 @@ def profile():
         return render_template('profile.html')
 @app.route('/edit', methods=['GET', 'POST'])
 def dashboard():
-  
     id = current_user.id
     name_to_update = Accounts.query.get_or_404(id)
     if request.method == "POST":
