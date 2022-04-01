@@ -9,8 +9,8 @@ class Accounts(UserMixin, db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
+    profile =  db.Column(db.String(200), unique=True, nullable=True)
     listings = db.relationship('Listings', backref='accounts', cascade="all, delete-orphan")
-
 
     def __init__(self, email, password):
         self.email = email
@@ -37,8 +37,4 @@ class Files(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('listings.id'))
     file_path = db.Column(db.String(200), unique=True, nullable=False)
 
-class profile(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
-    file_path = db.Column(db.String(200), unique=True, nullable=False)
 
