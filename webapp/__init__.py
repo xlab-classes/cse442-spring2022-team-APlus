@@ -9,14 +9,11 @@ from flask_mail import Mail
 load_dotenv()
 app = Flask(__name__)
 
-DB_USER="jchi3"
-DB_PASSWORD="50266661"
-DB_NAME="jchi3_db"
-SMTP_USERNAME = "cse442aplus@gmail.com"
-SMTP_PASSWORD = "hssjlcgmsyopqqca"
+
 
 UPLOAD_FOLDER = 'webapp/static/uploads/'
-sql_database = 'mysql+pymysql://{0}:{1}@oceanus.cse.buffalo.edu/{2}'.format(DB_USER, DB_PASSWORD, DB_NAME)
+#sql_database = 'mysql+pymysql://{0}:{1}@oceanus.cse.buffalo.edu/{2}'.format(DB_USER, DB_PASSWORD, DB_NAME)
+sql_database = 'mysql+pymysql://{0}:{1}@oceanus.cse.buffalo.edu/{2}'.format(os.getenv('DB_USER'), os.getenv('DB_PASSWORD'), os.getenv('DB_NAME'))
 app.config['SECRET_KEY'] = 'mySecretKey'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
@@ -24,8 +21,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = sql_database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] =SMTP_USERNAME
-app.config['MAIL_PASSWORD'] = SMTP_PASSWORD
+app.config['MAIL_USERNAME'] = os.getenv('SMTP_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('SMTP_PASSWORD')
+#app.config['MAIL_USERNAME'] =SMTP_USERNAME
+#app.config['MAIL_PASSWORD'] = SMTP_PASSWORD
+
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 
