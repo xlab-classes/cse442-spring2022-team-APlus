@@ -10,11 +10,13 @@ class Accounts(UserMixin, db.Model):
     password = db.Column(db.String(100), nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
     profile =  db.Column(db.String(200), unique=True, nullable=True)
+    Username =  db.Column(db.String(200), unique=True, nullable=True)
     listings = db.relationship('Listings', backref='accounts', cascade="all, delete-orphan")
 
-    def __init__(self, email, password):
+    def __init__(self, email, password,Username):
         self.email = email
         self.password = password
+        self.Username = Username
         db.session.add(self)
         db.session.commit()
 
@@ -38,3 +40,7 @@ class Files(db.Model):
     file_path = db.Column(db.String(200), unique=True, nullable=False)
 
 
+class profile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
+    file_path = db.Column(db.String(200), unique=True, nullable=False)
