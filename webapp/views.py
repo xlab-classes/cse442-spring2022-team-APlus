@@ -120,15 +120,14 @@ def profile():
             random_filename = str(uuid4()) +'.'+ file_extension
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
             #file.profile = random_filename
-            img = profile(user_id=current_user.id,file_path=random_filename)
-            db.session.add(img)
+            file1.profile = random_filename 
             db.session.commit()
             # data = io.BytesIO()
             # filetype = filename.split('.')[1]
             # im.save(data, filetype)
             # encoded_img_data = base64.b64encode(data.getvalue())
             #print(len(encoded_img_data.decode('utf-8'))) #<class 'str'>
-            return render_template('profile.html',  img_data=random_filename)
+            return render_template('profile.html')
     else:
         return render_template('profile.html')
 
@@ -193,13 +192,15 @@ def display_listings():
   
 @app.route('/listing/delete/<int:id>')
 def delete_post(id):
+    id = current_user.id
     post_to_delete = Listings.query.get_or_404(id)
-    try:
-        db.session.delete(post_to_delete)
-        db.session.commit()
-        return redirect(url_for('listings'))
-    except:
-        return redirect(url_for('listings'))
+    if id == post_to_delete.user_id:
+         try:
+             db.session.delete(post_to_delete)
+             db.session.commit()
+             return redirect(url_for('listings'))
+         except:
+             return redirect(url_for('listings'))
 
       
 def allowed_file(filename):

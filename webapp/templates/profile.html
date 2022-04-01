@@ -1,44 +1,41 @@
 <html>
 <head>
-<title>Upload profile image</title>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />        
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<title>User Profile</title>
 </head>
 <body>
-<p><h1 align="center">Upload profile image</h1></p>
-<div class="container">
-<div class="row">
-    <h2>Select a file to upload</h2>
+<p><h1 align="center">User Profile</h1></p>
 
-    
-    {% if current_user.profile %}
 
-    <img src="{{ url_for('static', filename='uploads/' + current_user.profile)}}" width="200" align="right">
+<strong>Email:</strong>
+{{ current_user.email }}<br/>
 
-    {% else %}
+{% if current_user.profile %}
 
-    <img src="{{ url_for('static', filename='uploads/default_profile_pic.png')}}" width="200" align="right">
+<img src="{{ url_for('static', filename='uploads/' + current_user.profile)}}" width="200" align="center">
 
-    {% endif %}
+{% else %}
 
-   
-    
-    <form method="post" action="/upload" enctype="multipart/form-data">
-        <dl>
-            <p>
-                <input type="file" name="file" class="form-control" autocomplete="off" required>
-            </p>
-        </dl>
+<img src="{{ url_for('static', filename='uploads/default_profile_pic.png')}}" width="200" align="center">
+
+{% endif %}
+
+<form method="post" action="/upload" enctype="multipart/form-data">
+    <dl>
         <p>
-            <input type="submit" value="Submit" class="btn btn-info">
+            <input type="file" name="file" class="form-control" autocomplete="off" required>
         </p>
-    </form>
+    </dl>
+    <p>
+        <input type="submit" value="Submit" class="btn btn-info">
+    </p>
+</form>
 
  <form action="/delete_profile" method="get">
      <p>
   Delete your profile?
      </p>
   <button name="Delete Profile" type="submit" value={{current_user.id}}>Delete</button>
+
  </form>
 
 
