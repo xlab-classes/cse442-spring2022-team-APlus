@@ -41,3 +41,10 @@ class profile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
     file_path = db.Column(db.String(200), unique=True, nullable=False)
+
+
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
+    recipient_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
+    message = db.Column(db.String(1000), nullable=False)
