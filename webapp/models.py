@@ -48,3 +48,10 @@ class Message(db.Model):
     sender_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
     recipient_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
     message = db.Column(db.String(1000), nullable=False)
+
+    def __init__(self, sender_id, recipient_id, message):
+        self.sender_id = sender_id
+        self.recipient_id = recipient_id
+        self.message = message
+        db.session.add(self)
+        db.session.commit()
