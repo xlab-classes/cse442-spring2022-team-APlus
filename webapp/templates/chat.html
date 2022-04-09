@@ -8,9 +8,9 @@
     <h1>Chat</h1>
     <form action="/chat" method="post" enctype="multipart/form-data">
         <label for="email">Email:</label><br>
-        <input type="text" id="email" name="email" required><br>
-        <label for="text">Text:</label><br>
-        <input type="text" id="text" name="text" required><br>
+        <input type="email" id="email" name="email" pattern=".+@buffalo.edu" required><br>
+        <label for="message">Message:</label><br>
+        <input type="text" id="message" name="message" required><br>
         <input type="submit" value="Chat">
     </form>
 
