@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Chat</title>
+</head>
+
+<body>
+    <h1>Chat</h1>
+    <form action="/chat" method="post" enctype="multipart/form-data">
+        <label for="email">Email:</label><br>
+        <input type="text" id="email" name="email" required><br>
+        <label for="text">Text:</label><br>
+        <input type="text" id="text" name="text" required><br>
+        <input type="submit" value="Chat">
+    </form>
+
+    <h2>Chat</h2>
+    {{ chat_history | safe }}
+
+</body>
+</html>
