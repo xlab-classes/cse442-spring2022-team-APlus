@@ -1,12 +1,9 @@
 from webapp import app, login_manager, ALLOWED_EXTENSIONS, mail
-from flask import request, make_response, render_template, redirect, url_for, flash
+from flask import request, render_template, redirect, url_for, flash
 from webapp.models import db, Accounts, Listings, Files, Msg
 import bcrypt
 import os
 from werkzeug.utils import secure_filename
-from PIL import Image
-import base64
-import io
 from uuid import uuid4
 from flask_login import login_user, login_required, current_user, logout_user
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
@@ -175,7 +172,7 @@ def delete():
         db.session.delete(account_obj)
     db.session.commit()
     flash("User Deleted Successfully.")
-    return render_template("/signup.html")
+    return render_template("signup.html")
 
 
 def display_listings():
