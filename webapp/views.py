@@ -1,6 +1,6 @@
 from webapp import app, login_manager, ALLOWED_EXTENSIONS, mail
 from flask import request, make_response, render_template, redirect, url_for, flash
-from webapp.models import db, Accounts, Listings, Files
+from webapp.models import db, Accounts, Listings, Files, Msg
 import bcrypt
 import os
 from werkzeug.utils import secure_filename
@@ -202,6 +202,20 @@ def delete_post(id):
         return redirect(url_for('listings'))
 
 
+@app.route('/chat/', methods=['GET', 'POST'])
+@login_required
+def chat():
+    if request.method == 'GET':
+        return render_template('chat.html', chat_history='unhandled. TODO')
+    elif request.method == 'POST':
+        recipient_email = request.form['email']
+        recipient = Accounts.query.filter_by(email=recipient_email).first()
+        if recipient and recipient.id != current_user.id:
+            message = request.form['message']
+            Msg(current_user.id, recipient.id, message)
+    return redirect(url_for('chat'))
+
+
 
 # Test endpoint to create new accounts without email verification. Password does not support special characters
 #
@@ -216,7 +230,7 @@ def test_account():
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         user = Accounts(email, hashed_password)
         user.verify_account()
-        return "ACCOUNT CREATED - " + email + ":" + password
+        return "TEST ACCOUNT CREATED - " + email + ":" + password
 
 
 def allowed_file(filename):
