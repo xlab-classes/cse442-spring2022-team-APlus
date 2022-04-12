@@ -57,6 +57,7 @@ def register():
             else:
                 msg = "Login successful!"
                 login_user(stored_email)
+                return render_template('profile.html')
         else:
             msg = "Login failed. Incorrect username or password."
     return render_template('login.html', msg=msg)
@@ -110,7 +111,9 @@ def verify_account(token):
             return "Invalid verification link"
 
 
+
 @app.route('/upload', methods=['GET', 'POST'])
+@login_required
 def profile():
     if request.method == 'POST':
         id = current_user.id
@@ -195,6 +198,7 @@ def display_listings():
 
   
 @app.route('/listing/delete/<int:id>')
+@login_required
 def delete_post(id):
     id = current_user.id
     post_to_delete = Listings.query.get_or_404(id)
