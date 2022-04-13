@@ -1,5 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+from sqlalchemy.ext.mutable import MutableList
+from sqlalchemy import PickleType
 
 db = SQLAlchemy()
 
@@ -10,6 +12,9 @@ class Accounts(UserMixin, db.Model):
     password = db.Column(db.String(100), nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
     listings = db.relationship('Listings', backref='accounts', cascade="all, delete-orphan")
+    liked_posts = db.Column(MutableList.as_mutable(PickleType), default=[])
+
+
 
     def __init__(self, email, password):
         self.email = email
@@ -27,6 +32,7 @@ class Listings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
     title = db.Column(db.String(200), nullable=False)
+    likes = db.Column(db.Integer)
     description = db.Column(db.String(1000), nullable=False)
     files = db.relationship('Files', backref='listings', cascade="all, delete-orphan")
 
