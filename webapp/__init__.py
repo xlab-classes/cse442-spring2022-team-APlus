@@ -31,7 +31,7 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 db.init_app(app)
 with app.app_context():
     # Uncomment line below to delete all tables and reset database
-    db.drop_all()
+    # db.drop_all()
     db.create_all()
 
 login_manager = LoginManager()
