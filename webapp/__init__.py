@@ -12,8 +12,7 @@ app = Flask(__name__)
 
 
 UPLOAD_FOLDER = 'webapp/static/uploads/'
-#sql_database = 'mysql+pymysql://{0}:{1}@oceanus.cse.buffalo.edu/{2}'.format(DB_USER, DB_PASSWORD, DB_NAME)
-sql_database = 'mysql+pymysql://{0}:{1}@oceanus.cse.buffalo.edu/{2}'.format(os.getenv('DB_USER'), os.getenv('DB_PASSWORD'), os.getenv('DB_NAME'))
+sql_database = 'mysql+pymysql://{0}:{1}@oceanus.cse.buffalo.edu/{2}?charset=utf8mb4'.format(os.getenv('DB_USER'), os.getenv('DB_PASSWORD'), os.getenv('DB_NAME'))
 app.config['SECRET_KEY'] = 'mySecretKey'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
