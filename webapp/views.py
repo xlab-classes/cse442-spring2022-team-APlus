@@ -121,11 +121,15 @@ def profile():
             file_extension = filename.split('.')[1]
             random_filename = str(uuid4()) +'.'+ file_extension
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
-            file1.profile = random_filename 
+            file1.profile = random_filename
+            #file.profile = random_filename
+            img = profile(id=current_user.id,file_path=random_filename)
+            db.session.add(img)
             db.session.commit()
             return render_template('profile.html')
     else:
         return render_template('profile.html')
+
 @app.route('/edit', methods=['GET', 'POST'])
 def dashboard():
     id = current_user.id
@@ -149,7 +153,7 @@ def listings():
                 valid_images.append(file)
         if len(valid_images) == 0:
             return redirect(url_for('listings'))
-        listing = Listings(user_id=current_user.id, title=title, description=description)
+        listing = Listings(user_id=current_user.id, title=title, description=description, likes=0)
         db.session.add(listing)
         db.session.commit()
         for file in valid_images:
@@ -186,14 +190,37 @@ def display_listings():
     active_listings = reversed(Listings.query.all())
     for listing in active_listings:
         listing_owner = Accounts.query.filter_by(id=listing.user_id).first()
-        output += "<p>{0} - {1}</p><p>{2}</p>".format(listing.title, listing_owner.email, listing.description)
+        output += "<p>{0} - {1}</p><p>{2}</p><p>Likes: {3}</p>".format(listing.title, listing_owner.email, listing.description, listing.likes)
         output += "<a href=\" /listing/delete/"+ str(listing.id )+" \" class=\"btn btn-outline-danger btn-sm\">Delete Post</a>"
         listing_photos = Files.query.filter_by(post_id=listing.id)
         for photos in listing_photos:
-            output += "<img src={0}>".format(app.config['UPLOAD_FOLDER'].split('webapp')[1] + photos.file_path)
+            output += "<img src={0} height=500 width=500><p></p>".format(app.config['UPLOAD_FOLDER'].split('webapp')[1] + photos.file_path)
+            output += "<a href=\" /listing/like/" + str(listing.id) + " \" class=\"btn btn-outline-danger btn-sm\">Like/Unlike Post</a>"
     return output
 
-  
+
+@app.route('/listing/like/<int:id>')
+def like_post(id):
+    post_to_like = Listings.query.filter_by(id=id).first()
+    user_that_is_liking = Accounts.query.filter_by(id=current_user.id).first()
+    try:
+        if id in user_that_is_liking.liked_posts:
+            post_to_like.likes -= 1
+            user_that_is_liking.liked_posts.remove(id)
+            db.session.commit()
+            print("post successfully unliked.\n Post ID {} now has {} likes".format(id, post_to_like.likes))
+        else:
+            post_to_like.likes += 1
+            user_that_is_liking.liked_posts.append(id)
+            db.session.commit()
+            print("post successfully liked.\n Post ID {} now has {} likes".format(id, post_to_like.likes))
+    except Exception as e:
+        print("error while liking/disliking the post: \n")
+        print(e)
+        pass
+    return redirect(url_for('listings'))
+
+
 @app.route('/listing/delete/<int:id>')
 @login_required
 def delete_post(id):
