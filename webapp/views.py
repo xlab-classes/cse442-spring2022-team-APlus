@@ -222,23 +222,6 @@ def chat():
     return redirect(url_for('chat'))
 
 
-
-# Test endpoint to create new accounts without email verification. Password does not support special characters
-#
-# Usage:
-# localhost:<port>/devtool/create_account?email=<email>&password=<password>
-@app.route('/devtool/create_account')
-def test_account():
-    if request.method == "GET":
-        args = request.args
-        email = args['email']
-        password = args['password']
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        user = Accounts(email, hashed_password)
-        user.verify_account()
-        return "TEST ACCOUNT CREATED - " + email + ":" + password
-
-
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
