@@ -45,7 +45,15 @@
             text-align:center;
         }
     </style>
+     
 </head>
+<div class="topnav">
+        
+    <a href="{{ url_for('listings')}}" class="btn btn-secondary btn-sm">Posts</a>
+    <a href="{{ url_for('profile')}}" class="btn btn-secondary btn-sm">Profile</a>
+        <a href="{{ url_for('logout')}}" class="btn btn-secondary btn-sm">Logout</a>
+   
+  </div>
 
 <body>
     <h1>Create Listings</h1>

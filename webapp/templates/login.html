@@ -58,20 +58,16 @@
 
 
 <body>
-    <div style="background-color:#BAA1C2;color:white;padding:px;width: 100%;
-    height: 50%;">
-        <button class=button >home</button>
-        <button class=button>post</button>
-        <button class=button>profile</button>
-
-    </div>
+   
 
     <h1>Login</h1>
     <form action="/login" method="post" enctype="multipart/form-data">
         <label for="email">Email:</label><br>
-        <input type="text" id="email" name="email" pattern=".+@buffalo.edu" required><br>
-        <label for="password">Password:</label><br>
-        <input type="password" id="password" name="password" required><br>
+          <input type="text" id="email" name="email" pattern=".+@buffalo.edu" required><br>
+          <label for="Username">Username:</label><br>
+          <input type="Username" id="Username" name="Username" required><br>
+          <label for="password">Password:</label><br>
+          <input type="password" id="password" name="password" required><br>
         <input type="submit" value="Log In">
     </form>
     <p>Don't have an account? <a href="/signup">Sign Up</a></p>

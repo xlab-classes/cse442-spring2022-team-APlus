@@ -35,8 +35,10 @@ def register():
     if request.method == 'POST':
         email = request.form['email'].strip().lower()
         password = request.form['password']
+        Username = request.form['Username']
         stored_email = Accounts.query.filter_by(email=email).first()
-        if not stored_email or not Accounts.query.filter_by(email=email).first().password:
+        stored_Username = Accounts.query.filter_by(Username=Username).first()
+        if not stored_email or not Accounts.query.filter_by(email=email).first().password or not stored_Username:
             msg = "Login failed. Incorrect username or password."
             return render_template("login.html", msg=msg)
         stored_password_hash = Accounts.query.filter_by(email=email).first().password.encode("utf-8")
@@ -52,6 +54,7 @@ def register():
             else:
                 msg = "Login successful!"
                 login_user(stored_email)
+                return render_template('profile.html')
         else:
             msg = "Login failed. Incorrect username or password."
     return render_template('login.html', msg=msg)
@@ -70,12 +73,13 @@ def signup():
     if request.method == 'POST':
         email = request.form['email'].strip().lower()
         password = request.form['password']
+        Username = request.form['Username']
         email_query = Accounts.query.filter_by(email=email).first()
         if email_query:
             msg = "Email In Use"
         elif len(email.split('@')) == 2 and len(email.split('.')) == 2 and "@buffalo.edu" in email:
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-            user = Accounts(email, hashed_password)
+            user = Accounts(email, hashed_password,Username)
             token = serializer.dumps(user.email)
             message = Message("Verify Your Account", sender=("CSE442 - Team A+", "cse442aplus@gmail.com"),
                               recipients=[user.email])
@@ -105,28 +109,29 @@ def verify_account(token):
 
 
 @app.route('/upload/', methods=['GET', 'POST'])
+@login_required
 def profile():
     if request.method == 'POST':
         id = current_user.id
         file1 = Accounts.query.get_or_404(id)
         file = request.files['file']
-        print (file)
         if file:
             filename = secure_filename(file.filename)
             file_extension = filename.split('.')[1]
             random_filename = str(uuid4()) +'.'+ file_extension
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
-            #file.profile = random_filename
-            img = profile(user_id=current_user.id,file_path=random_filename)
-            db.session.add(img)
+            file1.profile = random_filename 
             db.session.commit()
-            # data = io.BytesIO()
-            # filetype = filename.split('.')[1]
-            # im.save(data, filetype)
-            # encoded_img_data = base64.b64encode(data.getvalue())
-            #print(len(encoded_img_data.decode('utf-8'))) #<class 'str'>
-            return render_template('profile.html',  img_data=random_filename)
+            return render_template('profile.html')
     else:
+        return render_template('profile.html')
+@app.route('/edit', methods=['GET', 'POST'])
+def dashboard():
+    id = current_user.id
+    name_to_update = Accounts.query.get_or_404(id)
+    if request.method == "POST":
+        name_to_update.Username = request.form['Username']
+        db.session.commit()
         return render_template('profile.html')
 
 
@@ -189,14 +194,17 @@ def display_listings():
 
   
 @app.route('/listing/delete/<int:id>/')
+@login_required
 def delete_post(id):
+    id = current_user.id
     post_to_delete = Listings.query.get_or_404(id)
-    try:
-        db.session.delete(post_to_delete)
-        db.session.commit()
-        return redirect(url_for('listings'))
-    except:
-        return redirect(url_for('listings'))
+    if id == post_to_delete.user_id:
+         try:
+             db.session.delete(post_to_delete)
+             db.session.commit()
+             return redirect(url_for('listings'))
+         except:
+             return redirect(url_for('listings'))
 
 
 @app.route('/message/', methods=['GET'])
