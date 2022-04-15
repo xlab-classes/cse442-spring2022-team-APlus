@@ -35,12 +35,22 @@ def register():
     if request.method == 'POST':
         email = request.form['email'].strip().lower()
         password = request.form['password']
-        Username = request.form['Username']
-        stored_email = Accounts.query.filter_by(email=email).first()
-        stored_Username = Accounts.query.filter_by(Username=Username).first()
-        if not stored_email or not Accounts.query.filter_by(email=email).first().password or not stored_Username:
-            msg = "Login failed. Incorrect username or password."
-            return render_template("login.html", msg=msg)
+        email_or = False
+        if('@' in email):
+            stored_email = Accounts.query.filter_by(email=email).first()
+            email_or= True
+        else:
+            stored_Username = Accounts.query.filter_by(Username=email).first()
+            email = Accounts.query.filter_by(Username=email).first().email
+            stored_email = Accounts.query.filter_by(email=email).first()
+        if email_or:
+            if (not stored_email or not Accounts.query.filter_by(email=email).first().password) :
+                msg = "Login failed. Incorrect username or password."
+                return render_template("login.html", msg=msg)
+        else:
+            if (not stored_Username or not Accounts.query.filter_by(email=email).first().password):
+                msg = "Login failed. Incorrect username or password."
+                return render_template("login.html", msg=msg)
         stored_password_hash = Accounts.query.filter_by(email=email).first().password.encode("utf-8")
         if bcrypt.checkpw(password.encode("utf-8"), stored_password_hash):
             if not stored_email.is_verified:
