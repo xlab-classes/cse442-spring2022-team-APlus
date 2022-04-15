@@ -199,18 +199,35 @@ def delete_post(id):
         return redirect(url_for('listings'))
 
 
-@app.route('/chat/', methods=['GET', 'POST'])
+@app.route('/message/', methods=['GET'])
 @login_required
-def chat():
-    if request.method == 'GET':
-        return render_template('chat.html', chat_history='unhandled. TODO')
-    elif request.method == 'POST':
-        recipient_email = request.form['email']
-        recipient = Accounts.query.filter_by(email=recipient_email).first()
-        if recipient and recipient.id != current_user.id:
-            message = request.form['message']
-            Msg(current_user.id, recipient.id, message)
-    return redirect(url_for('chat'))
+def conversation():
+    users = Accounts.query.all()
+    user_list = ""
+    for user in users:
+        if user.id != current_user.id:
+            user_list += "<a href='{0}'>{1}</a><br/>".format(user.id, user.email)
+    return render_template('message_user_directory.html', user_list=user_list)
+
+
+@app.route('/message/<int:recipient_id>', methods=['GET', 'POST'])
+@login_required
+def message(recipient_id):
+    recipient = Accounts.query.get_or_404(recipient_id)
+    if request.method == 'POST':
+        message = request.form['message']
+        Msg(current_user.id, recipient.id, message)
+        return redirect(url_for('message', recipient_id=recipient_id))
+    sender_msgs = Msg.query.filter(Msg.sender_id == current_user.id, Msg.recipient_id == recipient_id)
+    receiver_msgs = Msg.query.filter(Msg.sender_id == recipient_id, Msg.recipient_id == current_user.id)
+    msg_history = sender_msgs.union(receiver_msgs).order_by(Msg.id)
+    messages = ""
+    for msg in msg_history:
+        if msg.sender_id == current_user.id:
+            messages += "{0}: {1}<br/>".format(current_user.email, msg.message)
+        else:
+            messages += "{0}: {1}<br/>".format(recipient.email, msg.message)
+    return render_template('message.html', recipient_id=recipient_id, recipient_email=recipient.email, message_history=messages)
 
 
 def allowed_file(filename):
