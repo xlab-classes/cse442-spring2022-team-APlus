@@ -61,9 +61,13 @@
    
     <h1>Create Account</h1>
 
-    <form action="/login" method="post" enctype="multipart/form-data">
-        <label for="email">Email:</label><br>
-                    <input type="text" id="email" name="email" required><br>
+    <table>
+        <tr>
+            <td >A+</td>
+            <td>
+                <form action="/signup" method="post" enctype="multipart/form-data">
+                    <label for="email">Email:</label><br>
+                    <input type="text" id="email" name="email" pattern=".+@buffalo.edu" required><br>
                     <label for="Username">Username:</label><br>
                     <input type="Username" id="Username" name="Username" required><br>
                     <label for="password">Password:</label><br>

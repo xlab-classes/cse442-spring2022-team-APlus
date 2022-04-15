@@ -29,7 +29,7 @@ def home():
     return 'Hello World!'
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login/', methods=['GET', 'POST'])
 def register():
     msg = ""
     if request.method == 'POST':
@@ -70,14 +70,14 @@ def register():
     return render_template('login.html', msg=msg)
 
 
-@app.route('/logout')
+@app.route('/logout/')
 @login_required
 def logout():
     logout_user()
     return redirect('/login')
 
 
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route('/signup/', methods=['GET', 'POST'])
 def signup():
     msg = ""
     if request.method == 'POST':
@@ -101,7 +101,7 @@ def signup():
     return render_template('signup.html', msg=msg)
   
   
-@app.route('/verify/<token>')
+@app.route('/verify/<token>/')
 def verify_account(token):
     if request.method == 'GET':
         try:
@@ -118,8 +118,7 @@ def verify_account(token):
             return "Invalid verification link"
 
 
-
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload/', methods=['GET', 'POST'])
 @login_required
 def profile():
     if request.method == 'POST':
@@ -146,7 +145,7 @@ def dashboard():
         return render_template('profile.html')
 
 
-@app.route('/listing', methods=['GET', 'POST'])
+@app.route('/listing/', methods=['GET', 'POST'])
 @login_required
 def listings():
     if request.method == 'POST':
@@ -174,7 +173,7 @@ def listings():
     return render_template('listing.html', listings=display_listings())
 
 
-@app.route('/delete_profile')
+@app.route('/delete_profile/')
 @login_required
 def delete():
     files_obj = Files.query.filter_by(id=current_user.id).first()
@@ -204,7 +203,7 @@ def display_listings():
     return output
 
   
-@app.route('/listing/delete/<int:id>')
+@app.route('/listing/delete/<int:id>/')
 @login_required
 def delete_post(id):
     id = current_user.id
@@ -218,35 +217,35 @@ def delete_post(id):
              return redirect(url_for('listings'))
 
 
-@app.route('/chat/', methods=['GET', 'POST'])
+@app.route('/message/', methods=['GET'])
 @login_required
-def chat():
-    if request.method == 'GET':
-        return render_template('chat.html', chat_history='unhandled. TODO')
-    elif request.method == 'POST':
-        recipient_email = request.form['email']
-        recipient = Accounts.query.filter_by(email=recipient_email).first()
-        if recipient and recipient.id != current_user.id:
-            message = request.form['message']
-            Msg(current_user.id, recipient.id, message)
-    return redirect(url_for('chat'))
+def conversation():
+    users = Accounts.query.all()
+    user_list = ""
+    for user in users:
+        if user.id != current_user.id:
+            user_list += "<a href='{0}'>{1}</a><br/>".format(user.id, user.email)
+    return render_template('message_user_directory.html', user_list=user_list)
 
 
-
-# Test endpoint to create new accounts without email verification. Password does not support special characters
-#
-# Usage:
-# localhost:<port>/devtool/create_account?email=<email>&password=<password>
-@app.route('/devtool/create_account')
-def test_account():
-    if request.method == "GET":
-        args = request.args
-        email = args['email']
-        password = args['password']
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        user = Accounts(email, hashed_password)
-        user.verify_account()
-        return "TEST ACCOUNT CREATED - " + email + ":" + password
+@app.route('/message/<int:recipient_id>/', methods=['GET', 'POST'])
+@login_required
+def message(recipient_id):
+    recipient = Accounts.query.get_or_404(recipient_id)
+    if request.method == 'POST':
+        message = request.form['message']
+        Msg(current_user.id, recipient.id, message)
+        return redirect(url_for('message', recipient_id=recipient_id))
+    sender_msgs = Msg.query.filter(Msg.sender_id == current_user.id, Msg.recipient_id == recipient_id)
+    receiver_msgs = Msg.query.filter(Msg.sender_id == recipient_id, Msg.recipient_id == current_user.id)
+    msg_history = sender_msgs.union(receiver_msgs).order_by(Msg.id)
+    messages = ""
+    for msg in msg_history:
+        if msg.sender_id == current_user.id:
+            messages += "{0}: {1}<br/>".format(current_user.email, msg.message)
+        else:
+            messages += "{0}: {1}<br/>".format(recipient.email, msg.message)
+    return render_template('message.html', recipient_id=recipient_id, recipient_email=recipient.email, message_history=messages)
 
 
 def allowed_file(filename):
