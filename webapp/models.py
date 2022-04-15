@@ -41,3 +41,17 @@ class profile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
     file_path = db.Column(db.String(200), unique=True, nullable=False)
+
+
+class Msg(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
+    recipient_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
+    message = db.Column(db.String(2048), nullable=False)
+
+    def __init__(self, sender_id, recipient_id, message):
+        self.sender_id = sender_id
+        self.recipient_id = recipient_id
+        self.message = message
+        db.session.add(self)
+        db.session.commit()
