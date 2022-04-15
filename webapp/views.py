@@ -29,7 +29,7 @@ def home():
     return 'Hello World!'
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login/', methods=['GET', 'POST'])
 def register():
     msg = ""
     if request.method == 'POST':
@@ -57,14 +57,14 @@ def register():
     return render_template('login.html', msg=msg)
 
 
-@app.route('/logout')
+@app.route('/logout/')
 @login_required
 def logout():
     logout_user()
     return redirect('/login')
 
 
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route('/signup/', methods=['GET', 'POST'])
 def signup():
     msg = ""
     if request.method == 'POST':
@@ -87,7 +87,7 @@ def signup():
     return render_template('signup.html', msg=msg)
   
   
-@app.route('/verify/<token>')
+@app.route('/verify/<token>/')
 def verify_account(token):
     if request.method == 'GET':
         try:
@@ -104,7 +104,7 @@ def verify_account(token):
             return "Invalid verification link"
 
 
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload/', methods=['GET', 'POST'])
 def profile():
     if request.method == 'POST':
         id = current_user.id
@@ -130,7 +130,7 @@ def profile():
         return render_template('profile.html')
 
 
-@app.route('/listing', methods=['GET', 'POST'])
+@app.route('/listing/', methods=['GET', 'POST'])
 @login_required
 def listings():
     if request.method == 'POST':
@@ -158,7 +158,7 @@ def listings():
     return render_template('listing.html', listings=display_listings())
 
 
-@app.route('/delete_profile')
+@app.route('/delete_profile/')
 @login_required
 def delete():
     files_obj = Files.query.filter_by(id=current_user.id).first()
@@ -188,7 +188,7 @@ def display_listings():
     return output
 
   
-@app.route('/listing/delete/<int:id>')
+@app.route('/listing/delete/<int:id>/')
 def delete_post(id):
     post_to_delete = Listings.query.get_or_404(id)
     try:
@@ -210,7 +210,7 @@ def conversation():
     return render_template('message_user_directory.html', user_list=user_list)
 
 
-@app.route('/message/<int:recipient_id>', methods=['GET', 'POST'])
+@app.route('/message/<int:recipient_id>/', methods=['GET', 'POST'])
 @login_required
 def message(recipient_id):
     recipient = Accounts.query.get_or_404(recipient_id)
