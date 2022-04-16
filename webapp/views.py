@@ -142,8 +142,12 @@ def dashboard():
     if request.method == "POST":
         new_Username  = request.form['Username']
         if new_Username != "":
-            name_to_update.Username = request.form['Username']
-            db.session.commit()
+            Username_query = Accounts.query.filter_by(Username=new_Username).first()
+            if Username_query and new_Username != name_to_update.Username :
+                flash("Username in use")
+            else:
+                name_to_update.Username = request.form['Username']
+                db.session.commit()
         return render_template('profile.html')
 
 
