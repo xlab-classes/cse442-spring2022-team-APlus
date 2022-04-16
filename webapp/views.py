@@ -29,18 +29,25 @@ def home():
     return 'Hello World!'
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login/', methods=['GET', 'POST'])
 def register():
     msg = ""
     if request.method == 'POST':
         email = request.form['email'].strip().lower()
         password = request.form['password']
-        Username = request.form['Username']
-        stored_email = Accounts.query.filter_by(email=email).first()
-        stored_Username = Accounts.query.filter_by(Username=Username).first()
-        if not stored_email or not Accounts.query.filter_by(email=email).first().password or not stored_Username:
-            msg = "Login failed. Incorrect username or password."
-            return render_template("login.html", msg=msg)
+        if('@' in email):
+            stored_email = Accounts.query.filter_by(email=email).first()
+        else:
+            if (Accounts.query.filter_by(Username=email).first() == None):
+                msg = "Login failed. Incorrect username or password. "
+                return render_template("login.html", msg=msg)
+            email = Accounts.query.filter_by(Username=email).first().email
+            stored_email = Accounts.query.filter_by(email=email).first()
+     
+        if (not stored_email or not Accounts.query.filter_by(email=email).first().password) :
+                msg = "Login failed. Incorrect username or password."
+                return render_template("login.html", msg=msg)
+     
         stored_password_hash = Accounts.query.filter_by(email=email).first().password.encode("utf-8")
         if bcrypt.checkpw(password.encode("utf-8"), stored_password_hash):
             if not stored_email.is_verified:
@@ -60,14 +67,14 @@ def register():
     return render_template('login.html', msg=msg)
 
 
-@app.route('/logout')
+@app.route('/logout/')
 @login_required
 def logout():
     logout_user()
     return redirect('/login')
 
 
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route('/signup/', methods=['GET', 'POST'])
 def signup():
     msg = ""
     if request.method == 'POST':
@@ -75,8 +82,11 @@ def signup():
         password = request.form['password']
         Username = request.form['Username']
         email_query = Accounts.query.filter_by(email=email).first()
+        Username_query = Accounts.query.filter_by(Username=Username).first()
         if email_query:
             msg = "Email In Use"
+        if Username_query:
+            msg = "Username In Use"
         elif len(email.split('@')) == 2 and len(email.split('.')) == 2 and "@buffalo.edu" in email:
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             user = Accounts(email, hashed_password,Username)
@@ -91,7 +101,7 @@ def signup():
     return render_template('signup.html', msg=msg)
   
   
-@app.route('/verify/<token>')
+@app.route('/verify/<token>/')
 def verify_account(token):
     if request.method == 'GET':
         try:
@@ -108,8 +118,7 @@ def verify_account(token):
             return "Invalid verification link"
 
 
-
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload/', methods=['GET', 'POST'])
 @login_required
 def profile():
     if request.method == 'POST':
@@ -135,12 +144,18 @@ def dashboard():
     id = current_user.id
     name_to_update = Accounts.query.get_or_404(id)
     if request.method == "POST":
-        name_to_update.Username = request.form['Username']
-        db.session.commit()
+        new_Username  = request.form['Username']
+        if new_Username != "":
+            Username_query = Accounts.query.filter_by(Username=new_Username).first()
+            if Username_query and new_Username != name_to_update.Username :
+                flash("Username in use")
+            else:
+                name_to_update.Username = request.form['Username']
+                db.session.commit()
         return render_template('profile.html')
 
 
-@app.route('/listing', methods=['GET', 'POST'])
+@app.route('/listing/', methods=['GET', 'POST'])
 @login_required
 def listings():
     if request.method == 'POST':
@@ -168,7 +183,7 @@ def listings():
     return render_template('listing.html', listings=display_listings())
 
 
-@app.route('/delete_profile')
+@app.route('/delete_profile/')
 @login_required
 def delete():
     files_obj = Files.query.filter_by(id=current_user.id).first()
@@ -198,30 +213,8 @@ def display_listings():
             output += "<a href=\" /listing/like/" + str(listing.id) + " \" class=\"btn btn-outline-danger btn-sm\">Like/Unlike Post</a>"
     return output
 
-
-@app.route('/listing/like/<int:id>')
-def like_post(id):
-    post_to_like = Listings.query.filter_by(id=id).first()
-    user_that_is_liking = Accounts.query.filter_by(id=current_user.id).first()
-    try:
-        if id in user_that_is_liking.liked_posts:
-            post_to_like.likes -= 1
-            user_that_is_liking.liked_posts.remove(id)
-            db.session.commit()
-            print("post successfully unliked.\n Post ID {} now has {} likes".format(id, post_to_like.likes))
-        else:
-            post_to_like.likes += 1
-            user_that_is_liking.liked_posts.append(id)
-            db.session.commit()
-            print("post successfully liked.\n Post ID {} now has {} likes".format(id, post_to_like.likes))
-    except Exception as e:
-        print("error while liking/disliking the post: \n")
-        print(e)
-        pass
-    return redirect(url_for('listings'))
-
-
-@app.route('/listing/delete/<int:id>')
+  
+@app.route('/listing/delete/<int:id>/')
 @login_required
 def delete_post(id):
     id = current_user.id
@@ -235,35 +228,35 @@ def delete_post(id):
              return redirect(url_for('listings'))
 
 
-@app.route('/chat/', methods=['GET', 'POST'])
+@app.route('/message/', methods=['GET'])
 @login_required
-def chat():
-    if request.method == 'GET':
-        return render_template('chat.html', chat_history='unhandled. TODO')
-    elif request.method == 'POST':
-        recipient_email = request.form['email']
-        recipient = Accounts.query.filter_by(email=recipient_email).first()
-        if recipient and recipient.id != current_user.id:
-            message = request.form['message']
-            Msg(current_user.id, recipient.id, message)
-    return redirect(url_for('chat'))
+def conversation():
+    users = Accounts.query.all()
+    user_list = ""
+    for user in users:
+        if user.id != current_user.id:
+            user_list += "<a href='{0}'>{1}</a><br/>".format(user.id, user.email)
+    return render_template('message_user_directory.html', user_list=user_list)
 
 
-
-# Test endpoint to create new accounts without email verification. Password does not support special characters
-#
-# Usage:
-# localhost:<port>/devtool/create_account?email=<email>&password=<password>
-@app.route('/devtool/create_account')
-def test_account():
-    if request.method == "GET":
-        args = request.args
-        email = args['email']
-        password = args['password']
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        user = Accounts(email, hashed_password)
-        user.verify_account()
-        return "TEST ACCOUNT CREATED - " + email + ":" + password
+@app.route('/message/<int:recipient_id>/', methods=['GET', 'POST'])
+@login_required
+def message(recipient_id):
+    recipient = Accounts.query.get_or_404(recipient_id)
+    if request.method == 'POST':
+        message = request.form['message']
+        Msg(current_user.id, recipient.id, message)
+        return redirect(url_for('message', recipient_id=recipient_id))
+    sender_msgs = Msg.query.filter(Msg.sender_id == current_user.id, Msg.recipient_id == recipient_id)
+    receiver_msgs = Msg.query.filter(Msg.sender_id == recipient_id, Msg.recipient_id == current_user.id)
+    msg_history = sender_msgs.union(receiver_msgs).order_by(Msg.id)
+    messages = ""
+    for msg in msg_history:
+        if msg.sender_id == current_user.id:
+            messages += "{0}: {1}<br/>".format(current_user.email, msg.message)
+        else:
+            messages += "{0}: {1}<br/>".format(recipient.email, msg.message)
+    return render_template('message.html', recipient_id=recipient_id, recipient_email=recipient.email, message_history=messages)
 
 
 def allowed_file(filename):
