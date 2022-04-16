@@ -15,7 +15,7 @@ class Accounts(UserMixin, db.Model):
     Username =  db.Column(db.String(200), unique=True, nullable=True)
     listings = db.relationship('Listings', backref='accounts', cascade="all, delete-orphan")
     liked_posts = db.Column(MutableList.as_mutable(PickleType), default=[])
-
+    saved_posts = db.Column(MutableList.as_mutable(PickleType), default=[])
 
 
     def __init__(self, email, password,Username):
@@ -38,6 +38,7 @@ class Listings(db.Model):
     likes = db.Column(db.Integer)
     description = db.Column(db.String(1000), nullable=False)
     files = db.relationship('Files', backref='listings', cascade="all, delete-orphan")
+
 
 
 class Files(db.Model):
