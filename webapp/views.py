@@ -35,22 +35,19 @@ def register():
     if request.method == 'POST':
         email = request.form['email'].strip().lower()
         password = request.form['password']
-        email_or = False
         if('@' in email):
             stored_email = Accounts.query.filter_by(email=email).first()
-            email_or= True
         else:
-            stored_Username = Accounts.query.filter_by(Username=email).first()
+            if (Accounts.query.filter_by(Username=email).first() == None):
+                msg = "Login failed. Incorrect username or password. "
+                return render_template("login.html", msg=msg)
             email = Accounts.query.filter_by(Username=email).first().email
             stored_email = Accounts.query.filter_by(email=email).first()
-        if email_or:
-            if (not stored_email or not Accounts.query.filter_by(email=email).first().password) :
+     
+        if (not stored_email or not Accounts.query.filter_by(email=email).first().password) :
                 msg = "Login failed. Incorrect username or password."
                 return render_template("login.html", msg=msg)
-        else:
-            if (not stored_Username or not Accounts.query.filter_by(email=email).first().password):
-                msg = "Login failed. Incorrect username or password."
-                return render_template("login.html", msg=msg)
+     
         stored_password_hash = Accounts.query.filter_by(email=email).first().password.encode("utf-8")
         if bcrypt.checkpw(password.encode("utf-8"), stored_password_hash):
             if not stored_email.is_verified:
@@ -85,8 +82,11 @@ def signup():
         password = request.form['password']
         Username = request.form['Username']
         email_query = Accounts.query.filter_by(email=email).first()
+        Username_query = Accounts.query.filter_by(Username=Username).first()
         if email_query:
             msg = "Email In Use"
+        if Username_query:
+            msg = "Username In Use"
         elif len(email.split('@')) == 2 and len(email.split('.')) == 2 and "@buffalo.edu" in email:
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             user = Accounts(email, hashed_password,Username)
@@ -140,8 +140,10 @@ def dashboard():
     id = current_user.id
     name_to_update = Accounts.query.get_or_404(id)
     if request.method == "POST":
-        name_to_update.Username = request.form['Username']
-        db.session.commit()
+        new_Username  = request.form['Username']
+        if new_Username != "":
+            name_to_update.Username = request.form['Username']
+            db.session.commit()
         return render_template('profile.html')
 
 
