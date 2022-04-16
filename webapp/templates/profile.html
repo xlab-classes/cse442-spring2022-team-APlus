@@ -126,6 +126,10 @@
 		
 </form>
 
+        <form action="/view_saved" method="get">
+            <p>View Saved Posts</p>
+              <button name="View Saved" type="submit" value={{current_user.id}}>Saved</button>
+        </form>
 
  <form action="/delete_profile" method="get">
      <p>
@@ -134,6 +138,8 @@
   <button name="Delete Profile" type="submit" value={{current_user.id}}>Delete</button>
 
  </form>
+
+
 
 
 

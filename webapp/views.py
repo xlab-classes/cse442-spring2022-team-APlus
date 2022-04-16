@@ -10,6 +10,7 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 from flask_mail import Message
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+session = {}
 
 
 @login_manager.user_loader
@@ -89,7 +90,7 @@ def signup():
             msg = "Username In Use"
         elif len(email.split('@')) == 2 and len(email.split('.')) == 2 and "@buffalo.edu" in email:
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-            user = Accounts(email, hashed_password,Username)
+            user = Accounts(email, hashed_password, Username)
             token = serializer.dumps(user.email)
             message = Message("Verify Your Account", sender=("CSE442 - Team A+", "cse442aplus@gmail.com"),
                               recipients=[user.email])
@@ -99,9 +100,8 @@ def signup():
         else:
             msg = "Invalid UB Email"
     return render_template('signup.html', msg=msg)
-  
-  
-@app.route('/verify/<token>/')
+
+@app.route('/verify/<token>')
 def verify_account(token):
     if request.method == 'GET':
         try:
@@ -118,7 +118,8 @@ def verify_account(token):
             return "Invalid verification link"
 
 
-@app.route('/upload/', methods=['GET', 'POST'])
+
+@app.route('/upload', methods=['GET', 'POST'])
 @login_required
 def profile():
     if request.method == 'POST':
@@ -128,16 +129,17 @@ def profile():
         if file:
             filename = secure_filename(file.filename)
             file_extension = filename.split('.')[1]
-            random_filename = str(uuid4()) +'.'+ file_extension
+            random_filename = str(uuid4()) + '.' + file_extension
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
             file1.profile = random_filename
-            #file.profile = random_filename
-            img = profile(id=current_user.id,file_path=random_filename)
+            # file.profile = random_filename
+            img = profile(id=current_user.id, file_path=random_filename)
             db.session.add(img)
             db.session.commit()
             return render_template('profile.html')
     else:
         return render_template('profile.html')
+
 
 @app.route('/edit', methods=['GET', 'POST'])
 def dashboard():
@@ -158,6 +160,7 @@ def dashboard():
 @app.route('/listing/', methods=['GET', 'POST'])
 @login_required
 def listings():
+    session["previous_url"] = url_for("listings")
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
@@ -203,29 +206,117 @@ def delete():
 def display_listings():
     output = ""
     active_listings = reversed(Listings.query.all())
+    print(active_listings)
     for listing in active_listings:
+        print(listing)
         listing_owner = Accounts.query.filter_by(id=listing.user_id).first()
-        output += "<p>{0} - {1}</p><p>{2}</p><p>Likes: {3}</p>".format(listing.title, listing_owner.email, listing.description, listing.likes)
-        output += "<a href=\" /listing/delete/"+ str(listing.id )+" \" class=\"btn btn-outline-danger btn-sm\">Delete Post</a>"
+        output += "<p>{0} - {1}</p><p>{2}</p><p>Likes: {3}</p>".format(listing.title, listing_owner.email,
+                                                                       listing.description, listing.likes)
+        output += "<a href=\" /listing/delete/" + str(
+            listing.id) + " \" class=\"btn btn-outline-danger btn-sm\">Delete Post</a>"
         listing_photos = Files.query.filter_by(post_id=listing.id)
         for photos in listing_photos:
-            output += "<img src={0} height=500 width=500><p></p>".format(app.config['UPLOAD_FOLDER'].split('webapp')[1] + photos.file_path)
-            output += "<a href=\" /listing/like/" + str(listing.id) + " \" class=\"btn btn-outline-danger btn-sm\">Like/Unlike Post</a>"
+            output += "<img src={0} height=500 width=500><p></p>".format(
+                app.config['UPLOAD_FOLDER'].split('webapp')[1] + photos.file_path)
+            output += "<a href=\" /listing/like/" + str(
+                listing.id) + " \" class=\"btn btn-outline-danger btn-sm\">Like/Unlike Post</a><p></p>"
+            output += "<a href=\" /listing/save/" + str(
+                listing.id) + " \" class=\"btn btn-outline-danger btn-sm\">Save Post</a>"
     return output
 
-  
-@app.route('/listing/delete/<int:id>/')
+
+@app.route("/view_saved")
+@login_required
+def view_saved():
+    session["previous_url"] = url_for("view_saved")
+    cur_saved_posts = reversed(Accounts.query.filter_by(id=current_user.id).first().saved_posts)
+    output = ""
+    active_listings = cur_saved_posts
+    for listing_id in active_listings:
+        listing = Listings.query.filter_by(id=listing_id).first()
+        listing_owner = Accounts.query.filter_by(id=listing.user_id).first()
+        output += "<p>{0} - {1}</p><p>{2}</p><p>Likes: {3}</p>".format(listing.title, listing_owner.email,
+                                                                       listing.description, listing.likes)
+        output += "<a href=\" /listing/delete/" + str(
+            listing.id) + " \" class=\"btn btn-outline-danger btn-sm\">Delete Post</a>"
+        listing_photos = Files.query.filter_by(post_id=listing.id)
+        for photos in listing_photos:
+            output += "<img src={0} height=500 width=500><p></p>".format(
+                app.config['UPLOAD_FOLDER'].split('webapp')[1] + photos.file_path)
+            output += "<a href=\" /listing/like/" + str(
+                listing.id) + " \" class=\"btn btn-outline-danger btn-sm\">Like/Unlike Post</a><p></p>"
+            output += "<a href=\" /listing/save/" + str(
+                listing.id) + " \" class=\"btn btn-outline-danger btn-sm\">Save Post</a>"
+    return render_template('saved.html', saved=output)
+
+
+@app.route('/listing/save/<int:id>')
+@login_required
+def save_post(id):
+    # listing = Listings(user_id=current_user.id, title=title, description=description, likes=0)
+    # post_to_save = Listings.query.filter_by(id=id).first()
+    user_that_is_saving = Accounts.query.filter_by(id=current_user.id).first()
+    try:
+        if id in user_that_is_saving.saved_posts:
+            user_that_is_saving.saved_posts.remove(id)
+            flash("Post unsaved!")
+            db.session.commit()
+        else:
+            user_that_is_saving.saved_posts.append(id)
+            flash("Post saved!")
+            db.session.commit()
+    except Exception as e:
+        print("Error while saving the post. \n")
+        print(e)
+    return redirect(session["previous_url"])
+
+
+@app.route('/listing/like/<int:id>')
+@login_required
+def like_post(id):
+    post_to_like = Listings.query.filter_by(id=id).first()
+    user_that_is_liking = Accounts.query.filter_by(id=current_user.id).first()
+    try:
+        if id in user_that_is_liking.liked_posts:
+            post_to_like.likes -= 1
+            user_that_is_liking.liked_posts.remove(id)
+            db.session.commit()
+            print("post successfully unliked.\n Post ID {} now has {} likes".format(id, post_to_like.likes))
+        else:
+            post_to_like.likes += 1
+            user_that_is_liking.liked_posts.append(id)
+            db.session.commit()
+            print("post successfully liked.\n Post ID {} now has {} likes".format(id, post_to_like.likes))
+    except Exception as e:
+        print("error while liking/disliking the post: \n")
+        print(e)
+        pass
+    return redirect(session["previous_url"])
+
+
+@app.route('/listing/delete/<int:id>')
 @login_required
 def delete_post(id):
-    id = current_user.id
-    post_to_delete = Listings.query.get_or_404(id)
-    if id == post_to_delete.user_id:
-         try:
-             db.session.delete(post_to_delete)
-             db.session.commit()
-             return redirect(url_for('listings'))
-         except:
-             return redirect(url_for('listings'))
+    print("here1")
+    # id = current_user.id
+    post_to_delete = Listings.query.get(id)
+    print('here2')
+    if current_user.id == post_to_delete.user_id:
+        try:
+            for user in Accounts.query.all():
+                if id in user.saved_posts:
+                    user.saved_posts.remove(id)
+                    print("deleting from saved")
+                if id in user.liked_posts:
+                    user.liked_posts.remove(id)
+                    print("deleting from likes")
+            db.session.delete(post_to_delete)
+            db.session.commit()
+        except Exception as e:
+            print("Exception while deleting post:\n")
+            print(e)
+        print("here")
+    return redirect(session["previous_url"])
 
 
 @app.route('/message/', methods=['GET'])
@@ -257,6 +348,21 @@ def message(recipient_id):
         else:
             messages += "{0}: {1}<br/>".format(recipient.email, msg.message)
     return render_template('message.html', recipient_id=recipient_id, recipient_email=recipient.email, message_history=messages)
+# Test endpoint to create new accounts without email verification. Password does not support special characters
+#
+# Usage:
+# localhost:<port>/devtool/create_account?email=<email>&password=<password>&username=<username>
+
+@app.route('/devtool/create_account')
+def test_account():
+    if request.method == "GET":
+        args = request.args
+        email = args['email']
+        password = args['password']
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+        user = Accounts(email, hashed_password)
+        user.verify_account()
+        return "TEST ACCOUNT CREATED - " + email + ":" + password
 
 
 def allowed_file(filename):
