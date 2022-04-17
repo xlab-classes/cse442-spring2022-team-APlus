@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang = "en">
+   <head></head>
+   <body>
+      
+    <style>
+        div {
+          background-color: lightgrey;
+          border: 15px solid green;
+          width: 600px;
+	height: 350px;
+	margin: auto;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+        }
+
+        .nav {
+          background-color: yellow;
+          list-style-type: none;
+          text-align: center;
+          margin: 0;
+          padding: 0;
+        }
+        label {
+          text-align: center;
+        }
+        input {
+          text-align: center;
+
+        }
+        body{
+            background-color: lightgrey;
+        }
+        .btn {
+        BORDER: 1px solid;  COLOR: black; height: 30px; width: 30px;
+        WIDTH: 33%;
+        display: inline-block;
+        }
+        h1{
+            text-align: center;
+        }
+        form{
+            text-align: center;
+        }
+        p{
+            text-align:center;
+        }
+        input{
+            text-align:center;
+        }
+
+    </style>
+    <div style="text-align:center">
+                   
+                        <table border="1" cellpadding="3" cellspacing="0" style="width: 60%;margin:auto">
+
+         <thead>
+            <tr>
+               <th>Name</th>
+               <th>City</th>
+               <th>Neighbor</th>
+               <th>Price</th>
+            </tr>
+         </thead>
+         
+         <tbody>
+            {% for room in rooms %}
+               <tr>
+                  <td>{{ room.room_name }}</td>
+                  <td>{{ room.city }}</td>
+                  <td>{{ room.neighbor }}</td>
+                  <td>{{ room.price }}</td>
+               </tr>
+            {% endfor %}
+         </tbody>
+      </table>
+     </div>
+   </body>
+</html>
