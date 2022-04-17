@@ -26,7 +26,7 @@ class Rooms(db.Model):
         self.neighbor = neighbor
         self.price = price
 
-
+#
 
 @app.before_first_request
 def create_tables():
@@ -49,7 +49,7 @@ def new():
          return render_template("result.html",msg = msg)
    return render_template('new.html')
 
-@app.route('/finding')
+@app.route('/')
 def index():
     return render_template('postPage.html')
 
