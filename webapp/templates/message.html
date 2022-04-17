@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Message {{ recipient_email }}</title>
+</head>
+
+<body>
+    <h1>Message {{ recipient_email }}</h1>
+
+    {{ message_history | safe }}
+
+    <form action="/message/{{ recipient_id }}" method="post" enctype="multipart/form-data">
+        <label for="message">Message:</label><br>
+        <input type="text" id="message" name="message" required><br>
+        <input type="submit" value="Message">
+    </form>
+
+</body>
+</html>
