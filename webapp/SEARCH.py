@@ -26,7 +26,7 @@ class Rooms(db.Model):
         self.neighbor = neighbor
         self.price = price
 
-#
+
 
 @app.before_first_request
 def create_tables():
