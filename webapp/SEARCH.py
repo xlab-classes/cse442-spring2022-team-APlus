@@ -49,7 +49,7 @@ def new():
          return render_template("result.html",msg = msg)
    return render_template('new.html')
 
-@app.route('/')
+@app.route('/finding')
 def index():
     return render_template('postPage.html')
 
