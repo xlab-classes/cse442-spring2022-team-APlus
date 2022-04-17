@@ -41,3 +41,10 @@ class profile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
     file_path = db.Column(db.String(200), unique=True, nullable=False)
+
+# class EditListings(db.Model):
+#     id = db.Column(db.Integer, primary_key=True)
+#     user_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
+#     title = db.Column(db.String(200), nullable=False)
+#     description = db.Column(db.String(1000), nullable=False)
+#     files = db.relationship('Files', backref='listings', cascade="all, delete-orphan")
