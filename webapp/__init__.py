@@ -38,7 +38,7 @@ with app.app_context():
     # Uncomment line below to delete all tables and reset database
     
     # db.drop_all()
-    db.create_all()
+    db.create_all() # this creates the database based on what is in models.py i think
 
 login_manager = LoginManager()
 login_manager.init_app(app)
