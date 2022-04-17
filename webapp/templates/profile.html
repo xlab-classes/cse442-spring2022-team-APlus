@@ -11,17 +11,9 @@
     <h2>Select a file to upload</h2>
 
     
-    {% if current_user.profile %}
-
-    <img src="{{ url_for('static', filename='uploads/' + current_user.profile)}}" width="200" align="right">
-
-    {% else %}
-
-    <img src="{{ url_for('static', filename='uploads/default_profile_pic.png')}}" width="200" align="right">
-
-    {% endif %}
-
-   
+        <div>
+            <img id="picture" src="data:image/jpeg;base64,{{ img_data }}" style="width:128px;height:128px;">
+        </div>
     
     <form method="post" action="/upload" enctype="multipart/form-data">
         <dl>
@@ -38,7 +30,7 @@
      <p>
   Delete your profile?
      </p>
-  <button name="Delete Profile" type="submit" value={{current_user.id}}>Delete</button>
+  <button name="Delete Profile" type="submit" value="HTML">Delete</button>
  </form>
 
 

@@ -88,8 +88,8 @@ def signup():
         else:
             msg = "Invalid UB Email"
     return render_template('signup.html', msg=msg)
-  
-  
+
+
 @app.route('/verify/<token>')
 def verify_account(token):
     if request.method == 'GET':
@@ -109,34 +109,41 @@ def verify_account(token):
 
 @app.route('/upload', methods=['GET', 'POST'])
 def profile():
-    if request.method == 'POST':
-        id = current_user.id
-        file1 = Accounts.query.get_or_404(id)
-        file = request.files['file']
-        print (file)
-        if file:
-            filename = secure_filename(file.filename)
-            file_extension = filename.split('.')[1]
-            random_filename = str(uuid4()) +'.'+ file_extension
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
-            #file.profile = random_filename
-            img = profile(user_id=current_user.id,file_path=random_filename)
-            db.session.add(img)
-            db.session.commit()
-            # data = io.BytesIO()
-            # filetype = filename.split('.')[1]
-            # im.save(data, filetype)
-            # encoded_img_data = base64.b64encode(data.getvalue())
-            #print(len(encoded_img_data.decode('utf-8'))) #<class 'str'>
-            return render_template('profile.html',  img_data=random_filename)
-    else:
-        return render_template('profile.html')
+    if request.method == "GET":
+        print()
+        return render_template("profile.html")
+    file = request.files['file']
+    if file:
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        # print('upload_image filename: ' + filename)
+        # flash('Image successfully uploaded and displayed below')
+        im = Image.open(app.config['UPLOAD_FOLDER'] + '/' + filename)
+        data = io.BytesIO()
+        filetype = filename.split('.')[1]
+        print(filetype)
+        im.save(data, filetype)
+        encoded_img_data = base64.b64encode(data.getvalue())
+        return render_template('profile.html', img_data=encoded_img_data.decode('utf-8'))
 
 
 @app.route('/listing', methods=['GET', 'POST'])
 @login_required
 def listings():
     if request.method == 'POST':
+
+        # post for creating listing was not used
+        # post for filtering was done instead
+        if request.form['title'] == None:
+            filterList = request.form['filter']
+
+            # output = filter_listings(filterList)
+            #return render_template('listing.html', listings=filter_listings(filterList))
+            return redirect(url_for('filter', filters=filterList))
+        ##################################
+
+        # else
+        #code for display all listings and recently added ones
         title = request.form['title']
         description = request.form['description']
         files = request.files.getlist("files")
@@ -158,7 +165,21 @@ def listings():
         db.session.commit()
         return redirect(url_for('listings'))
 
+    flash("HELOOWORLD", "message")
     return render_template('listing.html', listings=display_listings())
+
+
+@app.route('/filterList', methods=['GET', 'POST'])
+@login_required
+def filter_list(fil=None):
+
+    if request.method == 'POST':
+
+        keyword = request.form['fil']
+
+        return render_template('filterList.html', listings=filter_listings(keyword))
+
+    return render_template('filterList.html', listings=filter_listings(fil))
 
 
 @app.route('/delete_profile')
@@ -184,24 +205,51 @@ def display_listings():
     for listing in active_listings:
         listing_owner = Accounts.query.filter_by(id=listing.user_id).first()
         output += "<p>{0} - {1}</p><p>{2}</p>".format(listing.title, listing_owner.email, listing.description)
-        output += "<a href=\" /listing/delete/"+ str(listing.id )+" \" class=\"btn btn-outline-danger btn-sm\">Delete Post</a>"
         listing_photos = Files.query.filter_by(post_id=listing.id)
         for photos in listing_photos:
             output += "<img src={0}>".format(app.config['UPLOAD_FOLDER'].split('webapp')[1] + photos.file_path)
     return output
 
-  
-@app.route('/listing/delete/<int:id>')
-def delete_post(id):
-    post_to_delete = Listings.query.get_or_404(id)
-    try:
-        db.session.delete(post_to_delete)
-        db.session.commit()
-        return redirect(url_for('listings'))
-    except:
-        return redirect(url_for('listings'))
 
-      
+def filter_listings(keyword):
+
+    all_listings = reversed(Listings.query.all())
+    filtered_listings = filtering(all_listings, keyword)
+    output = display_set(filtered_listings)
+
+    return output
+
+
+def filtering(input_list, keyword):
+    filtered_list = []
+
+    if keyword is None:
+        return input_list
+    for listing in input_list:
+        if keyword in listing.description:
+            filtered_list.append(listing)
+
+    # Task test output check
+    for listing in filtered_list:
+        print(listing.description)
+    return filtered_list
+
+
+def display_set(list_set):
+    output = ''
+    for listing in list_set:
+        listing_owner = Accounts.query.filter_by(id=listing.user_id).first()
+        output += "<p>{0} - {1}</p><p>{2}</p>".format(listing.title, listing_owner.email, listing.description)
+        listing_photos = Files.query.filter_by(post_id=listing.id)
+        for photos in listing_photos:
+            output += "<img src={0}>".format(app.config['UPLOAD_FOLDER'].split('webapp')[1] + photos.file_path)
+
+    # Task test output check
+    print(output)
+
+    return output
+
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
