@@ -212,7 +212,6 @@ def display_listings():
 
 
 def filter_listings(keyword):
-
     all_listings = reversed(Listings.query.all())
     filtered_listings = filtering(all_listings, keyword)
     output = display_set(filtered_listings)
