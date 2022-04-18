@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Listings</title>
+</head>
+
+<body>
+<h2>Filter</h2>
+    <form action="/filterList" method="post" enctype="multipart/form-data">
+        <label for="fil">Filter:</label><br>
+        <input type="text" id="fil" name="fil" required><br>
+        <input type="submit" value="Search">
+    </form>
+
+    <h2>FilteredListings</h2>
+    {{ listings | safe }}
+
+</body>
+</html>
