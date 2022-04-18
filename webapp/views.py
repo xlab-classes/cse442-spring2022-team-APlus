@@ -236,11 +236,10 @@ def display_listings():
     print(active_listings)
     for listing in active_listings:
         print(listing)
-        listing_owner = Accounts.query.filter_by(id=listing.user_id).first()
-        output += "<p>{0} - {1}</p><p>{2}</p><p>Likes: {3}</p>".format(listing.title, listing_owner.email,
-                                                                       listing.description, listing.likes)
-        output += "<a href=\" /listing/delete/" + str(
-            listing.id) + " \" class=\"btn btn-outline-danger btn-sm\">Delete Post</a>"
+        listing_owner = Accounts.query.filter_by(id=listing.user_id).first(
+        output += "<p>{0} - {1}</p><p>{2}</p><p>Likes: {3}</p>".format(listing.title, listing_owner.email,listing.description, listing.likes)
+        output += "<a href=\" /editlisting/"+ str(listing.id )+" \" class=\"btn btn-outline-danger btn-sm\">Edit Post</a>"
+        output += "<a href=\" /listing/delete/" + str(listing.id) + " \" class=\"btn btn-outline-danger btn-sm\">Delete Post</a>"
         listing_photos = Files.query.filter_by(post_id=listing.id)
         for photos in listing_photos:
             output += "<img src={0} height=500 width=500><p></p>".format(
@@ -431,3 +430,44 @@ def display_set(list_set):
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/editlisting/<int:id>',methods=['GET', 'POST'])
+@login_required
+def editlistings(id):
+    listing=listings()
+    post_to_edit=Listings.query.filter_by(id=id).first()
+    deletefile=Listings.query.get(id)
+    db.session.delete(deletefile)
+    db.session.commit()
+    if request.method == 'POST':
+        post_to_edit.title = request.listing['title']
+        post_to_edit.description = request.listing['description']
+        post_to_edit.files = request.listing['files']
+        valid_image=[]
+        for editfile in post_to_edit.files:
+            if editfile and allowed_file(editfile.filename):
+                valid_image.append(editfile)
+        if len(valid_image) == 0:
+            return redirect(url_for('editlistings'))
+        editlisting = Listings(user_id=current_user.id, title=post_to_edit.title, description=post_to_edit.description)
+        try:
+            db.session.commit()
+            for editfile in valid_image:
+                editfile_extension = '.' + editfile.filename.split('.')[-1]
+                erandom_filename = str(uuid4()) + editfile_extension
+                editfile.save(os.path.join(app.config['UPLOAD_FOLDER'], erandom_filename))
+                editfile = Files(post_id=listing.id, file_path=erandom_filename)
+                db.session.add(editfile)
+            db.session.commit()
+            #return redirect(url_for('listings'))
+            return render_template("editlisting.html",listing=listing,post_to_edit=post_to_edit)
+        except:
+            render_template(url_for('listing'))
+    else:
+        return render_template("editlisting.html", listing=listing, post_to_edit=post_to_edit)
+
+
+
+
+
+
