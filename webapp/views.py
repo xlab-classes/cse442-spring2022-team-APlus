@@ -212,7 +212,10 @@ def allowed_file(filename):
 @login_required
 def editlistings(id):
     listing=listings()
-    post_to_edit=Listings.query.get_or_404(id)
+    post_to_edit=Listings.query.filter_by(id=id).first()
+    deletefile=Listings.query.get(id)
+    db.session.delete(deletefile)
+    db.session.commit()
     if request.method == 'POST':
         post_to_edit.title = request.listing['title']
         post_to_edit.description = request.listing['description']
