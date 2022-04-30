@@ -134,8 +134,8 @@ def profile():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
             file1.profile = random_filename
             # file.profile = random_filename
-            img = profile(id=current_user.id, file_path=random_filename)
-            db.session.add(img)
+            # img = profile(id=current_user.id, file_path=random_filename)
+            # db.session.add(img)
             db.session.commit()
             return render_template('profile.html')
     else:
