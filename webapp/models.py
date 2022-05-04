@@ -2,6 +2,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy import PickleType
+from flask_mail import Message
+import os
 
 db = SQLAlchemy()
 
@@ -11,17 +13,16 @@ class Accounts(UserMixin, db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
-    profile =  db.Column(db.String(200), unique=True, nullable=True)
-    Username =  db.Column(db.String(200), unique=True, nullable=True)
+    profile = db.Column(db.String(200), unique=True, nullable=True)
+    Username = db.Column(db.String(200), unique=True, nullable=True)
     listings = db.relationship('Listings', backref='accounts', cascade="all, delete-orphan")
     liked_posts = db.Column(MutableList.as_mutable(PickleType), default=[])
     saved_posts = db.Column(MutableList.as_mutable(PickleType), default=[])
 
-
-    def __init__(self, email, password,Username):
+    def __init__(self, email, password, username):
         self.email = email
         self.password = password
-        self.Username = Username
+        self.Username = username
         db.session.add(self)
         db.session.commit()
 
@@ -29,6 +30,12 @@ class Accounts(UserMixin, db.Model):
         self.is_verified = True
         db.session.add(self)
         db.session.commit()
+
+    def send_email_verification(self, hostname, mail_server, token):
+        message = Message("Verify Your Account", sender=("CSE442 - Team A+", os.getenv('SMTP_USERNAME')),
+                          recipients=[self.email])
+        message.body = "Visit {0}verify/{1} this link to verify your account.".format(hostname, token)
+        mail_server.send(message)
 
 
 class Listings(db.Model):
@@ -38,7 +45,6 @@ class Listings(db.Model):
     likes = db.Column(db.Integer)
     description = db.Column(db.String(1000), nullable=False)
     files = db.relationship('Files', backref='listings', cascade="all, delete-orphan")
-
 
 
 class Files(db.Model):

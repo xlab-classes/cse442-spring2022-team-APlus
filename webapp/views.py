@@ -1,4 +1,4 @@
-from webapp import app, login_manager, ALLOWED_EXTENSIONS, mail
+from webapp import app, login_manager, ALLOWED_EXTENSIONS, mail_server
 from flask import request, render_template, redirect, url_for, flash
 from webapp.models import db, Accounts, Listings, Files, Msg
 import bcrypt
@@ -7,10 +7,9 @@ from werkzeug.utils import secure_filename
 from uuid import uuid4
 from flask_login import login_user, login_required, current_user, logout_user
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
-from flask_mail import Message
 
-serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 session = {}
+serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 
 
 @login_manager.user_loader
@@ -36,16 +35,16 @@ def register():
     if request.method == 'POST':
         email = request.form['email'].strip().lower()
         password = request.form['password']
-        if('@' in email):
+        if '@' in email:
             stored_email = Accounts.query.filter_by(email=email).first()
         else:
-            if (Accounts.query.filter_by(Username=email).first() == None):
+            if not Accounts.query.filter_by(Username=email).first():
                 msg = "Login failed. Incorrect username or password. "
                 return render_template("login.html", msg=msg)
             email = Accounts.query.filter_by(Username=email).first().email
             stored_email = Accounts.query.filter_by(email=email).first()
      
-        if (not stored_email or not Accounts.query.filter_by(email=email).first().password) :
+        if not stored_email or not Accounts.query.filter_by(email=email).first().password :
                 msg = "Login failed. Incorrect username or password."
                 return render_template("login.html", msg=msg)
      
@@ -53,10 +52,7 @@ def register():
         if bcrypt.checkpw(password.encode("utf-8"), stored_password_hash):
             if not stored_email.is_verified:
                 token = serializer.dumps(stored_email.email)
-                message = Message("Verify Your Account", sender=("CSE442 - Team A+", os.getenv('SMTP_USERNAME')),
-                                  recipients=[stored_email.email])
-                message.body = "Visit {0}verify/{1} this link to verify your account.".format(request.host_url, token)
-                mail.send(message)
+                stored_email.send_email_verification(request.host_url, mail_server, token)
                 msg = "Unverified account. Click on the verification link in your email. " \
                       "If needed, a new link has been sent to your address."
             else:
@@ -92,35 +88,31 @@ def signup():
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             user = Accounts(email, hashed_password, Username)
             token = serializer.dumps(user.email)
-            message = Message("Verify Your Account", sender=("CSE442 - Team A+", os.getenv('SMTP_USERNAME')),
-                              recipients=[user.email])
-            message.body = "Visit {0}verify/{1} this link to verify your account.".format(request.host_url, token)
-            mail.send(message)
+            user.send_email_verification(request.host_url, mail_server, token)
             msg = "Account created for {0}. Check your email and verify your account.".format(user.email)
         else:
             msg = "Invalid UB Email"
     return render_template('signup.html', msg=msg)
 
 
-@app.route('/verify/<token>')
+@app.route('/verify/<token>/')
 def verify_account(token):
     if request.method == 'GET':
         try:
             email = serializer.loads(token, max_age=3600)
             user = Accounts.query.filter_by(email=email).first()
             if user.is_verified:
-                return "Your account has already been verified.".format(email)
+                return "Your account has already been verified."
             else:
                 user.verify_account()
-                return "Your account has been verified!".format(email)
+                return "Your account has been verified!"
         except SignatureExpired:
             return "Your verification link has expired. Visit the login page to request a new link."
         except:
             return "Invalid verification link"
 
 
-
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload/', methods=['GET', 'POST'])
 @login_required
 def profile():
     if request.method == 'POST':
@@ -141,7 +133,9 @@ def profile():
     else:
         return render_template('profile.html')
 
-@app.route('/edit', methods=['GET', 'POST'])
+
+@app.route('/edit/', methods=['GET', 'POST'])
+@login_required
 def dashboard():
     id = current_user.id
     name_to_update = Accounts.query.get_or_404(id)
@@ -199,20 +193,16 @@ def listings():
     return render_template('listing.html', listings=display_listings())
 
 
-@app.route('/filterList', methods=['GET', 'POST'])
+@app.route('/filterList/', methods=['GET', 'POST'])
 @login_required
 def filter_list(fil=None):
-
     if request.method == 'POST':
-
         keyword = request.form['fil']
-
         return render_template('filterList.html', listings=filter_listings(keyword))
-
     return render_template('filterList.html', listings=filter_listings(fil))
 
 
-@app.route('/delete_profile')
+@app.route('/delete_profile/')
 @login_required
 def delete():
     files_obj = Files.query.filter_by(id=current_user.id).first()
@@ -249,7 +239,7 @@ def display_listings():
     return output
 
 
-@app.route("/view_saved")
+@app.route("/view_saved/")
 @login_required
 def view_saved():
     session["previous_url"] = url_for("view_saved")
@@ -274,7 +264,7 @@ def view_saved():
     return render_template('saved.html', saved=output)
 
 
-@app.route('/listing/save/<int:id>')
+@app.route('/listing/save/<int:id>/')
 @login_required
 def save_post(id):
     # listing = Listings(user_id=current_user.id, title=title, description=description, likes=0)
@@ -292,7 +282,7 @@ def save_post(id):
     return redirect(session["previous_url"])
 
 
-@app.route('/listing/like/<int:id>')
+@app.route('/listing/like/<int:id>/')
 @login_required
 def like_post(id):
     post_to_like = Listings.query.filter_by(id=id).first()
@@ -311,7 +301,7 @@ def like_post(id):
     return redirect(session["previous_url"])
 
 
-@app.route('/listing/delete/<int:id>')
+@app.route('/listing/delete/<int:id>/')
 @login_required
 def delete_post(id):
     post_to_delete = Listings.query.get(id)
@@ -370,7 +360,6 @@ def filter_listings(keyword):
 
 def filtering(input_list, keyword):
     filtered_list = []
-
     if keyword is None:
         return input_list
     for listing in input_list:
@@ -393,7 +382,8 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/editlisting/<int:id>',methods=['GET', 'POST'])
+
+@app.route('/editlisting/<int:id>/',methods=['GET', 'POST'])
 @login_required
 def editlistings(id):
     listing=listings()
@@ -427,9 +417,3 @@ def editlistings(id):
             render_template(url_for('listing'))
     else:
         return render_template("editlisting.html", listing=listing, post_to_edit=post_to_edit)
-
-
-
-
-
-

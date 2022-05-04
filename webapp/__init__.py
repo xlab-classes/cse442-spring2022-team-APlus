@@ -21,11 +21,10 @@ app.config['MAIL_SERVER'] = 'smtp.office365.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USERNAME'] = os.getenv('SMTP_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('SMTP_PASSWORD')
-
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 
-mail = Mail(app)
+mail_server = Mail(app)
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
@@ -33,7 +32,7 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 db.init_app(app)
 with app.app_context():
     # Uncomment line below to delete all tables and reset database
-    # db.drop_all()
+    db.drop_all()
     db.create_all() # this creates the database based on what is in models.py i think
 
 login_manager = LoginManager()
