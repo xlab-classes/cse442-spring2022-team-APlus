@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 from uuid import uuid4
 from flask_login import login_user, login_required, current_user, logout_user
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
-from flask_mail import Message
+from flask_mail import Message  #python interpretor
 
 serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 session = {}
@@ -236,7 +236,7 @@ def display_listings():
     print(active_listings)
     for listing in active_listings:
         print(listing)
-        listing_owner = Accounts.query.filter_by(id=listing.user_id).first(
+        listing_owner = Accounts.query.filter_by(id=listing.user_id).first()
         output += "<p>{0} - {1}</p><p>{2}</p><p>Likes: {3}</p>".format(listing.title, listing_owner.email,listing.description, listing.likes)
         output += "<a href=\" /editlisting/"+ str(listing.id )+" \" class=\"btn btn-outline-danger btn-sm\">Edit Post</a>"
         output += "<a href=\" /listing/delete/" + str(listing.id) + " \" class=\"btn btn-outline-danger btn-sm\">Delete Post</a>"
