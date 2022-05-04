@@ -376,21 +376,8 @@ def message(recipient_id):
         else:
             messages += "{0}: {1}<br/>".format(recipient.email, msg.message)
     return render_template('message.html', recipient_id=recipient_id, recipient_email=recipient.email, message_history=messages)
-# Test endpoint to create new accounts without email verification. Password does not support special characters
-#
-# Usage:
-# localhost:<port>/devtool/create_account?email=<email>&password=<password>&username=<username>
 
-@app.route('/devtool/create_account')
-def test_account():
-    if request.method == "GET":
-        args = request.args
-        email = args['email']
-        password = args['password']
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        user = Accounts(email, hashed_password)
-        user.verify_account()
-        return "TEST ACCOUNT CREATED - " + email + ":" + password
+
 def filter_listings(keyword):
     all_listings = reversed(Listings.query.all())
     filtered_listings = filtering(all_listings, keyword)
