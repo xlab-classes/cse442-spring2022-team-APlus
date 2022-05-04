@@ -53,7 +53,7 @@ def register():
         if bcrypt.checkpw(password.encode("utf-8"), stored_password_hash):
             if not stored_email.is_verified:
                 token = serializer.dumps(stored_email.email)
-                message = Message("Verify Your Account", sender=("CSE442 - Team A+", "cse442aplus@gmail.com"),
+                message = Message("Verify Your Account", sender=("CSE442 - Team A+", os.getenv('SMTP_USERNAME')),
                                   recipients=[stored_email.email])
                 message.body = "Visit {0}verify/{1} this link to verify your account.".format(request.host_url, token)
                 mail.send(message)
@@ -92,7 +92,7 @@ def signup():
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             user = Accounts(email, hashed_password, Username)
             token = serializer.dumps(user.email)
-            message = Message("Verify Your Account", sender=("CSE442 - Team A+", "cse442aplus@gmail.com"),
+            message = Message("Verify Your Account", sender=("CSE442 - Team A+", os.getenv('SMTP_USERNAME')),
                               recipients=[user.email])
             message.body = "Visit {0}verify/{1} this link to verify your account.".format(request.host_url, token)
             mail.send(message)
@@ -149,7 +149,7 @@ def dashboard():
         new_Username  = request.form['Username']
         if new_Username != "":
             Username_query = Accounts.query.filter_by(Username=new_Username).first()
-            if Username_query and new_Username != name_to_update.Username :
+            if Username_query and new_Username != name_to_update.Username:
                 flash("Username in use")
             else:
                 name_to_update.Username = request.form['Username']
@@ -196,7 +196,6 @@ def listings():
         db.session.commit()
         return redirect(url_for('listings'))
 
-    flash("HELOOWORLD", "message")
     return render_template('listing.html', listings=display_listings())
 
 
@@ -226,16 +225,13 @@ def delete():
     if account_obj:
         db.session.delete(account_obj)
     db.session.commit()
-    flash("User Deleted Successfully.")
     return render_template("signup.html")
 
 
 def display_listings():
     output = ""
     active_listings = reversed(Listings.query.all())
-    print(active_listings)
     for listing in active_listings:
-        print(listing)
         listing_owner = Accounts.query.filter_by(id=listing.user_id).first()
         output += "<p>{0} - {1}</p><p>{2}</p><p>Likes: {3}</p>".format(listing.title, listing_owner.email,listing.description, listing.likes)
         #output += "<a href=\" /editlisting/"+ str(listing.id )+" \" class=\"btn btn-outline-danger btn-sm\">Edit Post</a>"
@@ -287,15 +283,12 @@ def save_post(id):
     try:
         if id in user_that_is_saving.saved_posts:
             user_that_is_saving.saved_posts.remove(id)
-            flash("Post unsaved!")
             db.session.commit()
         else:
             user_that_is_saving.saved_posts.append(id)
-            flash("Post saved!")
             db.session.commit()
     except Exception as e:
-        print("Error while saving the post. \n")
-        print(e)
+        pass
     return redirect(session["previous_url"])
 
 
@@ -309,15 +302,11 @@ def like_post(id):
             post_to_like.likes -= 1
             user_that_is_liking.liked_posts.remove(id)
             db.session.commit()
-            print("post successfully unliked.\n Post ID {} now has {} likes".format(id, post_to_like.likes))
         else:
             post_to_like.likes += 1
             user_that_is_liking.liked_posts.append(id)
             db.session.commit()
-            print("post successfully liked.\n Post ID {} now has {} likes".format(id, post_to_like.likes))
     except Exception as e:
-        print("error while liking/disliking the post: \n")
-        print(e)
         pass
     return redirect(session["previous_url"])
 
@@ -325,25 +314,18 @@ def like_post(id):
 @app.route('/listing/delete/<int:id>')
 @login_required
 def delete_post(id):
-    print("here1")
-    # id = current_user.id
     post_to_delete = Listings.query.get(id)
-    print('here2')
     if current_user.id == post_to_delete.user_id:
         try:
             for user in Accounts.query.all():
                 if id in user.saved_posts:
                     user.saved_posts.remove(id)
-                    print("deleting from saved")
                 if id in user.liked_posts:
                     user.liked_posts.remove(id)
-                    print("deleting from likes")
             db.session.delete(post_to_delete)
             db.session.commit()
         except Exception as e:
-            print("Exception while deleting post:\n")
-            print(e)
-        print("here")
+            pass
     return redirect(session["previous_url"])
 
 
@@ -395,11 +377,6 @@ def filtering(input_list, keyword):
         if keyword in listing.description:
             filtered_list.append(listing)
 
-    # Task test output check
-    for listing in filtered_list:
-        print(listing.description)
-    return filtered_list
-
 
 def display_set(list_set):
     output = ''
@@ -409,10 +386,6 @@ def display_set(list_set):
         listing_photos = Files.query.filter_by(post_id=listing.id)
         for photos in listing_photos:
             output += "<img src={0}>".format(app.config['UPLOAD_FOLDER'].split('webapp')[1] + photos.file_path)
-
-    # Task test output check
-    print(output)
-
     return output
 
 
