@@ -212,6 +212,18 @@ def filter_list(fil=None):
 
     return render_template('filterList.html', listings=filter_listings(fil))
 
+@app.route('/finding', methods=['GET', 'POST'])
+@login_required
+def filter_list(fil=None):
+
+    if request.method == 'POST':
+
+        keyword = request.form['fil']
+
+        return render_template('filter.html', listings=filter_listings(keyword))
+
+    return render_template('filter.html', listings=filter_listings(fil))
+
 
 @app.route('/delete_profile')
 @login_required
