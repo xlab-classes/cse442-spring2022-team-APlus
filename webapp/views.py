@@ -1,4 +1,4 @@
-from webapp import app, login_manager, ALLOWED_EXTENSIONS, mail_server
+from webapp import app, login_manager, ALLOWED_EXTENSIONS, mailserver
 from flask import request, render_template, redirect, url_for, flash
 from webapp.models import db, Accounts, Listings, Files, Msg
 import bcrypt
@@ -38,10 +38,10 @@ def register():
         if '@' in email:
             stored_email = Accounts.query.filter_by(email=email).first()
         else:
-            if not Accounts.query.filter_by(Username=email).first():
+            if not Accounts.query.filter_by(username=email).first():
                 msg = "Login failed. Incorrect username or password. "
                 return render_template("login.html", msg=msg)
-            email = Accounts.query.filter_by(Username=email).first().email
+            email = Accounts.query.filter_by(username=email).first().email
             stored_email = Accounts.query.filter_by(email=email).first()
      
         if not stored_email or not Accounts.query.filter_by(email=email).first().password :
@@ -52,7 +52,7 @@ def register():
         if bcrypt.checkpw(password.encode("utf-8"), stored_password_hash):
             if not stored_email.is_verified:
                 token = serializer.dumps(stored_email.email)
-                stored_email.send_email_verification(request.host_url, mail_server, token)
+                stored_email.send_email_verification(mailserver, request.host_url, token)
                 msg = "Unverified account. Click on the verification link in your email. " \
                       "If needed, a new link has been sent to your address."
             else:
@@ -79,7 +79,7 @@ def signup():
         password = request.form['password']
         Username = request.form['Username']
         email_query = Accounts.query.filter_by(email=email).first()
-        Username_query = Accounts.query.filter_by(Username=Username).first()
+        Username_query = Accounts.query.filter_by(username=Username).first()
         if email_query:
             msg = "Email In Use"
         if Username_query:
@@ -88,7 +88,7 @@ def signup():
             hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             user = Accounts(email, hashed_password, Username)
             token = serializer.dumps(user.email)
-            user.send_email_verification(request.host_url, mail_server, token)
+            user.send_email_verification(mailserver, request.host_url, token)
             msg = "Account created for {0}. Check your email and verify your account.".format(user.email)
         else:
             msg = "Invalid UB Email"
@@ -142,11 +142,11 @@ def dashboard():
     if request.method == "POST":
         new_Username  = request.form['Username']
         if new_Username != "":
-            Username_query = Accounts.query.filter_by(Username=new_Username).first()
-            if Username_query and new_Username != name_to_update.Username:
+            Username_query = Accounts.query.filter_by(username=new_Username).first()
+            if Username_query and new_Username != name_to_update.username:
                 flash("Username in use")
             else:
-                name_to_update.Username = request.form['Username']
+                name_to_update.username = request.form['Username']
                 db.session.commit()
         return render_template('profile.html')
 

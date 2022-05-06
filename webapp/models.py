@@ -3,7 +3,6 @@ from flask_login import UserMixin
 from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy import PickleType
 from flask_mail import Message
-import os
 
 db = SQLAlchemy()
 
@@ -14,7 +13,7 @@ class Accounts(UserMixin, db.Model):
     password = db.Column(db.String(100), nullable=False)
     is_verified = db.Column(db.Boolean, default=False)
     profile = db.Column(db.String(200), unique=True, nullable=True)
-    Username = db.Column(db.String(200), unique=True, nullable=True)
+    username = db.Column(db.String(200), unique=True, nullable=True)
     listings = db.relationship('Listings', backref='accounts', cascade="all, delete-orphan")
     liked_posts = db.Column(MutableList.as_mutable(PickleType), default=[])
     saved_posts = db.Column(MutableList.as_mutable(PickleType), default=[])
@@ -22,7 +21,7 @@ class Accounts(UserMixin, db.Model):
     def __init__(self, email, password, username):
         self.email = email
         self.password = password
-        self.Username = username
+        self.username = username
         db.session.add(self)
         db.session.commit()
 
@@ -31,11 +30,15 @@ class Accounts(UserMixin, db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def send_email_verification(self, hostname, mail_server, token):
-        message = Message("Verify Your Account", sender=("CSE442 - Team A+", os.getenv('SMTP_USERNAME')),
+    def send_email_verification(self, mailserver, hostname, token):
+        message = Message("Verify Your Account", sender=("CSE442 - Team A+", 'postmark@kan.aleeas.com'),
                           recipients=[self.email])
-        message.body = "Visit {0}verify/{1} this link to verify your account.".format(hostname, token)
-        mail_server.send(message)
+        message.body = "Hi {0}, \n\n" \
+                       "Thank you for signing up! All that's left is to verify your account. " \
+                       "Visit {1}verify/{2} to verify your account.\n\n" \
+                       "If you did not create an account, then you can ignore this email.\n\n\n" \
+                       "-Team A+".format(self.username, hostname, token)
+        mailserver.send(message)
 
 
 class Listings(db.Model):

@@ -12,19 +12,20 @@ app = Flask(__name__)
 
 UPLOAD_FOLDER = 'webapp/static/uploads/'
 sql_database = 'mysql+pymysql://{0}:{1}@oceanus.cse.buffalo.edu/{2}?charset=utf8mb4'.format(os.getenv('DB_USER'), os.getenv('DB_PASSWORD'), os.getenv('DB_NAME'))
-app.config['SECRET_KEY'] = 'mySecretKey'
+app.config['SECRET_KEY'] = os.getenv('APP_SECRET_KEY')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app.config['SQLALCHEMY_DATABASE_URI'] = sql_database
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-app.config['MAIL_SERVER'] = 'smtp.office365.com'
-app.config['MAIL_PORT'] = 587
+app.config['MAIL_SERVER'] = os.getenv('SMTP_HOSTNAME')
+app.config['MAIL_PORT'] = os.getenv('SMTP_PORT')
 app.config['MAIL_USERNAME'] = os.getenv('SMTP_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('SMTP_PASSWORD')
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 
-mail_server = Mail(app)
+
+mailserver = Mail(app)
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
@@ -32,7 +33,7 @@ if not os.path.exists(app.config['UPLOAD_FOLDER']):
 db.init_app(app)
 with app.app_context():
     # Uncomment line below to delete all tables and reset database
-    # db.drop_all()
+    db.drop_all()
     db.create_all() # this creates the database based on what is in models.py i think
 
 login_manager = LoginManager()
