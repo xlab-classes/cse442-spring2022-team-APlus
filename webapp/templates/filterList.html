@@ -1,9 +1,49 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <title>Listings</title>
-</head>
+    <style>
+        div {
+            background-color: #BAA1C2;
+            width: 100%;
+            
+            padding: 50px;
+            margin: 20px;
+        }
 
+        .header a{
+            border: 1px solid;
+            display: inline-block;
+            min-width: 150px;
+            text-align: center;
+            line-height: 50px;
+            font-size: 20px;
+            color: black;
+            text-decoration: none;
+            border: 1px solid black;
+            margin: 20px 2px;
+        }
+        body{
+            background-color: lightgray;
+        }
+
+
+       
+        
+    </style>
+</head>
+<div class="header">
+     
+    <a href="profile.html" class="profile" id="select_color"> profile</a>  
+    <a href="message_user_directory.html">message_user_directory</a>
+    <a href="listing.html">listing</a>
+    <a href="editlisting.html"> edit listing</a>
+    <a href="filterList.html">find roommates</a>
+    <a href="message.html">message</a>
+    <a href="saved.html">saved</a>
+   
+  </div>
 <body>
 <h2>Filter</h2>
     <form action="/filterList" method="post" enctype="multipart/form-data">
