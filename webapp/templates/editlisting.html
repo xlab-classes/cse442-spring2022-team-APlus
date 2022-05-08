@@ -67,13 +67,14 @@
 
 
 <div class="header">
-    <a href="profile.html" class="profile" id="select_color"> profile</a>  
-    <a href="message_user_directory.html">message_user_directory</a>
-    <a href="listing.html">listing</a>
+    <a href="{{ url_for('profile')}}" class="profile" id="select_color"> profile</a>  
     
-    <a href="filterList.html">find roommates</a>
-    <a href="message.html">message</a>
-    <a href="saved.html">saved</a>
+    <a href="{{ url_for('listing')}}">listing</a>
+    
+    <a href="/filterList">find roommates</a>
+    <a href="{{ url_for('message')}}">message</a>
+    <a href="/view_saved">saved</a>
+    <a href="{{ url_for('logout')}}">logout</a>
     
     
 
