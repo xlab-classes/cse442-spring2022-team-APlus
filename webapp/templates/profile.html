@@ -75,9 +75,9 @@
         
         <div class="topnav">
         
-            <a href="listing.html" class="btn btn-secondary btn-sm">Posts</a>
+            <a href="{{ url_for('listing')}}" class="btn btn-secondary btn-sm">Posts</a>
 
-            <a href="profile.html" class="btn btn-secondary btn-sm">Profile</a>
+            <a href="{{ url_for('profile')}}" class="btn btn-secondary btn-sm">Profile</a>
                 <a href="{{ url_for('logout')}}" class="btn btn-secondary btn-sm">Logout</a>
            
           </div>
