@@ -1,53 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-
-    <head>
-        <title>Listings</title>
-        <style>
-            div {
-                background-color: #BAA1C2;
-                width: 100%;
-                
-                padding: 50px;
-                margin: 20px;
-            }
-    
-            .header a{
-                border: 1px solid;
-                display: inline-block;
-                min-width: 150px;
-                text-align: center;
-                line-height: 50px;
-                font-size: 20px;
-                color: black;
-                text-decoration: none;
-                border: 1px solid black;
-                margin: 20px 2px;
-            }
-            body{
-            background-color: lightgray;
-        }
-    
-           
-            
-        </style>
-         
-    </head>
-
-<div class="header">
-    <a href="/login">log in</a>
-    <a href="{{ url_for('profile')}}" class="profile" id="select_color"> profile</a>  
-    
-    <a href="{{ url_for('listing')}}">listing</a>
-    <a href="{{ url_for('editlistings')}}"> edit listing</a>
-    <a href="/filterList">find roommates</a>
-    
-    <a href="/view_saved">saved</a>
-    <a href="{{ url_for('logout')}}">logout</a>
-       
-      </div>
 <head>
     <title>Message {{ recipient_email }}</title>
+    <style>
+        div {
+            background-color: #BAA1C2;
+            width: 100%;
+            
+            padding: 50px;
+            margin: 20px;
+        }
+
+        .header a{
+            border: 1px solid;
+            display: inline-block;
+            min-width: 150px;
+            text-align: center;
+            line-height: 50px;
+            font-size: 20px;
+            color: black;
+            text-decoration: none;
+            border: 1px solid black;
+            margin: 20px 2px;
+        }
+        body{
+            background-color: lightgray;
+        }
+
+       
+        
+    </style>
 </head>
 
 <body>
