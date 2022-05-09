@@ -18,7 +18,9 @@
         body {
           margin: 0;
           font-family: Arial, Helvetica, sans-serif;
+          background-color: lightgray;
         }
+        
         
         .topnav {
           overflow: hidden;
@@ -73,7 +75,7 @@
         
         <div class="topnav">
         
-            <a href="{{ url_for('listings')}}" class="btn btn-secondary btn-sm">Posts</a>
+            <a href="{{ url_for('listing')}}" class="btn btn-secondary btn-sm">Posts</a>
 
             <a href="{{ url_for('profile')}}" class="btn btn-secondary btn-sm">Profile</a>
                 <a href="{{ url_for('logout')}}" class="btn btn-secondary btn-sm">Logout</a>
@@ -97,7 +99,7 @@
 
 {% else %}
 
-<img src="{{ url_for('static', filename='uploads/default_profile_pic.png')}}" width="200" align="center">
+<img src="{{ url_for('static', filename='profile/default_profile_pic.png')}}" width="200" align="center">
 
 {% endif %}
 

@@ -134,8 +134,8 @@ def profile():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], random_filename))
             file1.profile = random_filename
             # file.profile = random_filename
-            img = profile(id=current_user.id, file_path=random_filename)
-            db.session.add(img)
+            # img = profile(id=current_user.id, file_path=random_filename)
+            # db.session.add(img)
             db.session.commit()
             return render_template('profile.html')
     else:
@@ -229,7 +229,6 @@ def delete():
     flash("User Deleted Successfully.")
     return render_template("signup.html")
 
-
 def display_listings():
     output = ""
     active_listings = reversed(Listings.query.all())
@@ -238,8 +237,10 @@ def display_listings():
         print(listing)
         listing_owner = Accounts.query.filter_by(id=listing.user_id).first()
         output += "<p>{0} - {1}</p><p>{2}</p><p>Likes: {3}</p>".format(listing.title, listing_owner.email,listing.description, listing.likes)
-        output += "<a href=\" /editlisting/"+ str(listing.id )+" \" class=\"btn btn-outline-danger btn-sm\">Edit Post</a>"
-        output += "<a href=\" /listing/delete/" + str(listing.id) + " \" class=\"btn btn-outline-danger btn-sm\">Delete Post</a>"
+        #output += "<a href=\" /editlisting/"+ str(listing.id )+" \" class=\"btn btn-outline-danger btn-sm\">Edit Post</a>"
+        if current_user.email == listing_owner.email:
+            output += "<a href=\" /listing/delete/" + str(listing.id) + " \" class=\"btn btn-outline-danger btn-sm\">Delete Post</a>"
+            output += "<a href=\" /editlisting/"+ str(listing.id )+" \" class=\"btn btn-outline-danger btn-sm\">Edit Post</a>"
         listing_photos = Files.query.filter_by(post_id=listing.id)
         for photos in listing_photos:
             output += "<img src={0} height=500 width=500><p></p>".format(
