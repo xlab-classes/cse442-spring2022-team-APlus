@@ -47,15 +47,20 @@
     </style>
      
 </head>
-<div class="topnav">
-        
-    <a href="{{ url_for('listings')}}" class="btn btn-secondary btn-sm">Posts</a>
-    <a href="{{ url_for('profile')}}" class="btn btn-secondary btn-sm">Profile</a>
-        <a href="{{ url_for('logout')}}" class="btn btn-secondary btn-sm">Logout</a>
-   
-  </div>
+
 
 <body>
+    <div class="topnav">
+        
+        <a href="{{ url_for('listings')}}" class="btn btn-secondary btn-sm">Posts</a>
+        <a href="/message/{{ recipient_id }}" class="btn btn-secondary btn-sm">messages</a>
+        <a href="/filterList" class="btn btn-secondary btn-sm">find roommates</a>
+        <a href="{{ url_for('profile')}}" class="btn btn-secondary btn-sm">Profile</a>
+        <a href="/view_saved" class="btn btn-secondary btn-sm">saved post</a>
+            <a href="{{ url_for('logout')}}" class="btn btn-secondary btn-sm">Logout</a>
+       
+      </div>
+    </div>
     <h2>Create Listings</h2>
     <form action="/listing" method="post" enctype="multipart/form-data">
         <label for="title">Title:</label><br>

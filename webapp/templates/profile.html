@@ -72,10 +72,11 @@
         </head>
         <body>
         
-        <div class="topnav">
+          <div class="topnav">
         
             <a href="{{ url_for('listings')}}" class="btn btn-secondary btn-sm">Posts</a>
-
+            <a href="/message/{{ recipient_id }}" class="btn btn-secondary btn-sm">messages</a>
+            <a href="/filterList" class="btn btn-secondary btn-sm">find roommates</a>
             <a href="{{ url_for('profile')}}" class="btn btn-secondary btn-sm">Profile</a>
                 <a href="{{ url_for('logout')}}" class="btn btn-secondary btn-sm">Logout</a>
            
