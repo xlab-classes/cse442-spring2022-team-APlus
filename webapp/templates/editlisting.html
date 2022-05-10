@@ -1,5 +1,3 @@
-
-   
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,26 +5,11 @@
     <style>
         div {
             background-color: #BAA1C2;
-            width: 3000px;
-            border: 15px ;
+            width: 100%;
+            
             padding: 50px;
             margin: 20px;
         }
-
-        .header a{
-            border: 1px solid;
-            display: inline-block;
-            min-width: 150px;
-            text-align: center;
-            line-height: 50px;
-            font-size: 20px;
-            color: black;
-            text-decoration: none;
-            border: 1px solid black;
-            margin: 20px 2px;
-        }
-
-        
 
         .nav {
             background-color: yellow;
@@ -64,24 +47,18 @@
     </style>
 </head>
 
-
-
-<div class="header">
-    <a href="{{ url_for('profile')}}" class="profile" id="select_color"> profile</a>  
-    
-    <a href="{{ url_for('listing')}}">listing</a>
-    
-    <a href="/filterList">find roommates</a>
-    <a href="{{ url_for('message')}}">message</a>
-    <a href="/view_saved">saved</a>
-    <a href="{{ url_for('logout')}}">logout</a>
-    
-    
-
-    
-</div>
-
 <body>
+    <div class="topnav">
+        
+        <a href="{{ url_for('listings')}}" class="btn btn-secondary btn-sm">Posts</a>
+        <a href="/message/{{ recipient_id }}" class="btn btn-secondary btn-sm">messages</a>
+        <a href="/filterList" class="btn btn-secondary btn-sm">find roommates</a>
+        <a href="{{ url_for('profile')}}" class="btn btn-secondary btn-sm">Profile</a>
+        <a href="/view_saved" class="btn btn-secondary btn-sm">saved post</a>
+            <a href="{{ url_for('logout')}}" class="btn btn-secondary btn-sm">Logout</a>
+       
+      </div>
+    </div>
     <h1>Edit Listing</h1>
     <form action="/listing" method="post" enctype="multipart/form-data">
         <label for="title">Title:</label><br>

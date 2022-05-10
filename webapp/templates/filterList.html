@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,24 +27,23 @@
             background-color: lightgray;
         }
 
-
        
         
     </style>
 </head>
-<div class="header">
-    <a href="/login">log in</a>
-    <a href="{{ url_for('profile')}}" class="profile" id="select_color"> profile</a>  
-    
-    <a href="{{ url_for('listing')}}">listing</a>
-    <a href="{{ url_for('editlistings')}}"> edit listing</a>
-    <a href="/filterList">find roommates</a>
-    <a href="{{ url_for('message')}}">message</a>
-    <a href="/view_saved">saved</a>
-    <a href="{{ url_for('logout')}}">logout</a>
-   
-  </div>
+
 <body>
+    <div class="topnav">
+        
+        <a href="{{ url_for('listings')}}" class="btn btn-secondary btn-sm">Posts</a>
+        <a href="/message/{{ recipient_id }}" class="btn btn-secondary btn-sm">messages</a>
+        <a href="/filterList" class="btn btn-secondary btn-sm">find roommates</a>
+        <a href="{{ url_for('profile')}}" class="btn btn-secondary btn-sm">Profile</a>
+        <a href="/view_saved" class="btn btn-secondary btn-sm">saved post</a>
+            <a href="{{ url_for('logout')}}" class="btn btn-secondary btn-sm">Logout</a>
+       
+      </div>
+    </div>
 <h2>Filter</h2>
     <form action="/filterList" method="post" enctype="multipart/form-data">
         <label for="fil">Filter:</label><br>
